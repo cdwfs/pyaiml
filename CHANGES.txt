@@ -1,3 +1,5 @@
+ - Removed the deprecated Kernel.getBotName and Kernel.setBotName functions.
+
 version 0.8.1:
  - "system" elements now attempt to intelligently convert between UNIX-style
    and Windows-style pathnames as appropriate.  For cross-platform compatibility,

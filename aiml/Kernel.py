@@ -31,7 +31,7 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.8.1"
+        self._version = "PyAIML 0.9"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
 
@@ -133,15 +133,6 @@ class Kernel:
         # there's a one-to-one mapping between templates and categories
         return self._brain.numTemplates()
 
-    def setBotName(self, newName):
-        "Sets the bot's name.  THIS FUNCTION IS DEPRECATED -- use setBotPredicate instead"
-        print "NOTE: Kernel.setBotName() is deprecated. Use Kernel.setBotPredicate() instead."
-        self.setBotPredicate("name", newName)
-    def getBotName(self):
-        "Returns the bot's name. THIS FUNCTION IS DEPRECATED -- use getBotPredicate instead."
-        print "NOTE: Kernel.getBotName() is deprecated. Use Kernel.getBotPredicate() instead."
-        return self.getBotPredicate("name")
-        
     def resetBrain(self):
         "Erases all of the bot's knowledge."
         del(self._brain)
