@@ -4,4 +4,12 @@ Laundry list of future tasks, in no particular order:
    atom-processing functions.  If anything goes wrong, the code catches the
    exception and just returns an empty string.  This may be acceptable
    default behavior, but a descriptive error message should be displayed
-   in verbose mode.
+   in verbose mode.  So, the real right way to do this is to build all this error-
+   checking into the LearnHandler class, so that these errors are caught at parse-
+   time.  That'll be a fun job.
+ - Support the Program D startup file syntax, or something similar?  It seems to
+   be a good way to initialize bot settings and substitutions.
+ - Finalize the persistent session data implementation.  It looks like the
+   most PyAIMLic solution is to provide a getSessionData() method that returns
+   a copy of the entire Kernel._sessions dictionary.  Then the bot author can
+   implement persistence however they'd like.
