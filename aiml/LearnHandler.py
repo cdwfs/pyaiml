@@ -45,14 +45,24 @@ class LearnHandler(ContentHandler):
 			pass # ignore all other elements
 
 	def characters(self, ch):
+		text = ch.encode("Latin-1")
 		if self._inPattern:
 			# Adding text to the current pattern.
-			self._currentPattern += ch.encode("Latin-1")
+			self._currentPattern += text
 		elif self._inThat:
-			self._currentThat += ch.encode("Latin-1")
+			self._currentThat += text
 		elif self._inTemplate:
-			# Add a new text atom to the atom at the top of the atom stack.
-			self._atomStack[-1].append(["text", {}, ch.encode("Latin-1")])
+			# Add a new text atom to the atom at the top of the atom stack. If
+			# there's already a text atom there, simply append the new
+			# characters to its contents.
+			textAtomOnStack = False
+			try: textAtomOnStack = (self._atomStack[-1][-1][0] == "text")
+			except:
+				pass
+			if textAtomOnStack:
+				self._atomStack[-1][-1][2] += text
+			else:
+				self._atomStack[-1].append(["text", {}, text])
 		else:
 			pass # ignore all other characters
 
