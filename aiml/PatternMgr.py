@@ -8,24 +8,24 @@ import string
 
 class PatternMgr:
 	# special dictionary keys
-	__UNDERSCORE = 0
-	__STAR       = 1
-	__TEMPLATE   = 2
-	__THAT       = 3
+	_UNDERSCORE = 0
+	_STAR       = 1
+	_TEMPLATE   = 2
+	_THAT       = 3
 	
 	def __init__(self):
-		self.__root = {}
-		self.__templateCount = 0
+		self._root = {}
+		self._templateCount = 0
 
 	def dump(self):
-		pprint.pprint(self.__root)
+		pprint.pprint(self._root)
 
 	def save(self, filename):
 		"Dumps the current patterns to a file.  To restore later, use restore()."
 		try:
 			outFile = open(filename, "wb")
-			marshal.dump(self.__templateCount, outFile)
-			marshal.dump(self.__root, outFile)
+			marshal.dump(self._templateCount, outFile)
+			marshal.dump(self._root, outFile)
 			outFile.close()
 		except Exception, e:
 			print "Error saving PatternMgr to file %s:" % filename
@@ -35,8 +35,8 @@ class PatternMgr:
 		"Restores a previously save()d collection of patterns."
 		try:
 			inFile = open(filename, "rb")
-			self.__templateCount = marshal.load(inFile)
-			self.__root = marshal.load(inFile)
+			self._templateCount = marshal.load(inFile)
+			self._root = marshal.load(inFile)
 			inFile.close()
 		except Exception, e:
 			print "Error restoring PatternMgr from file %s:" % filename
@@ -49,35 +49,35 @@ class PatternMgr:
 
 		# Navigate through the node tree to the template's location, adding
 		# nodes if necessary.
-		node = self.__root
+		node = self._root
 		for word in string.split(pattern):
 			key = word
 			if key == "_":
-				key = self.__UNDERSCORE
+				key = self._UNDERSCORE
 			elif key == "*":
-				key = self.__STAR
+				key = self._STAR
 			if not node.has_key(key):
 				node[key] = {}
 			node = node[key]
 
 		# navigate further down, if a non-empty "that" pattern was included
 		if len(that) > 0:
-			if not node.has_key(self.__THAT):
-				node[self.__THAT] = {}
+			if not node.has_key(self._THAT):
+				node[self._THAT] = {}
 			for word in string.split(that):
 				key = word
 				if key == "_":
-					key = self.__UNDERSCORE
+					key = self._UNDERSCORE
 				elif key == "*":
-					key = self.__STAR
+					key = self._STAR
 				if not node.has_key(key):
 					node[key] = {}
 				node = node[key]
 
 		# add the template.
-		if not node.has_key(self.__TEMPLATE):
-			self.__templateCount += 1	
-		node[self.__TEMPLATE] = template
+		if not node.has_key(self._TEMPLATE):
+			self._templateCount += 1	
+		node[self._TEMPLATE] = template
 
 	def match(self, pattern):
 		"""
@@ -91,16 +91,16 @@ class PatternMgr:
 		input = re.sub("[^A-Z0-9_* ]", "", input)
 		
 		# Pass the input off to the recursive call
-		return self.__match(string.split(input), self.__root)
+		return self._match(string.split(input), self._root)
 
-	def __match(self, words, root):
+	def _match(self, words, root):
 		"Behind-the-scenes recursive pattern-matching function."
 
 		# base-case: if the word list is empty, return the current node's
 		# template.
 		if len(words) == 0:
 			try:
-				return root[self.__TEMPLATE]
+				return root[self._TEMPLATE]
 			except KeyError:
 				return None
 		
@@ -108,28 +108,28 @@ class PatternMgr:
 		suffix = words[1:]
 		
 		# Check underscore
-#		if root.has_key(self.__UNDERSCORE):
+#		if root.has_key(self._UNDERSCORE):
 #			# Must include the case where suf is [] in order to handle the case
 #			# where a * or _ is at the end of the pattern.
 #			for j in range(len(suffix)+1):
 #				suf = suffix[j:]
-#				template = self.__match(suf, root[self.__UNDERSCORE])
+#				template = self._match(suf, root[self._UNDERSCORE])
 #				if template is not None:
 #					return template
 
 		# Check first
 		if root.has_key(first):
-			template = self.__match(suffix, root[first])
+			template = self._match(suffix, root[first])
 			if template is not None:
 				return template
 			
 		# check star
-		if root.has_key(self.__STAR):
+		if root.has_key(self._STAR):
 			# Must include the case where suf is [] in order to handle the case
 			# where a * or _ is at the end of the pattern.
 			for j in range(len(suffix)+1):
 				suf = suffix[j:]
-				template = self.__match(suf, root[self.__STAR])
+				template = self._match(suf, root[self._STAR])
 				if template is not None:
 					return template
 
@@ -138,5 +138,5 @@ class PatternMgr:
 
 	def numTemplates(self):
 		"Returns the number of templates currently stored."
-		return self.__templateCount
+		return self._templateCount
 			

@@ -1,8 +1,8 @@
 """
 This file contains the public interface to the aiml module.
 """
-from LearnHandler import *
-from PatternMgr import *
+from LearnHandler import LearnHandler
+from PatternMgr import PatternMgr
 
 import os
 import random
@@ -14,33 +14,33 @@ import xml.sax
 
 class Kernel:
     # module constants
-    __globalSessionID = 0
+    _globalSessionID = 0
 
     def __init__(self, ):
-        self.__verboseMode = True
-        self.__version = "0.1"
-        self.__brain = PatternMgr()
-        self.__sessions = {}
-        self.__addSession(self.__globalSessionID)
-        self.__atomProcessors = {
-            "condition":    self.__processCondition,
-            "date":         self.__processDate,
-            "formal":       self.__processFormal,
-            "gender":       self.__processGender,
-            "get":          self.__processGet,
-            "learn":        self.__processLearn,
-            "li":           self.__processLi,
-            "lowercase":    self.__processLowercase,
-            "random":       self.__processRandom,
-            "sentence":     self.__processSentence,
-            "set":          self.__processSet,
-            "size":         self.__processSize,
-            "srai":         self.__processSrai,
-            "system":       self.__processSystem,
-            "template":     self.__processTemplate,
-            "think":        self.__processThink,
-            "uppercase":    self.__processUppercase,
-            "version":      self.__processVersion,
+        self._verboseMode = True
+        self._version = "0.1"
+        self._brain = PatternMgr()
+        self._sessions = {}
+        self._addSession(self._globalSessionID)
+        self._atomProcessors = {
+            "condition":    self._processCondition,
+            "date":         self._processDate,
+            "formal":       self._processFormal,
+            "gender":       self._processGender,
+            "get":          self._processGet,
+            "learn":        self._processLearn,
+            "li":           self._processLi,
+            "lowercase":    self._processLowercase,
+            "random":       self._processRandom,
+            "sentence":     self._processSentence,
+            "set":          self._processSet,
+            "size":         self._processSize,
+            "srai":         self._processSrai,
+            "system":       self._processSystem,
+            "template":     self._processTemplate,
+            "think":        self._processThink,
+            "uppercase":    self._processUppercase,
+            "version":      self._processVersion,
         }
 
     def bootstrap(self, brainFile = None, learnFiles = [], commands = []):
@@ -63,25 +63,25 @@ class Kernel:
             self.learn(file)
         for cmd in commands:
             print self.respond(cmd)
-        if self.__verboseMode:
+        if self._verboseMode:
             print "Kernel bootstrap completed in %.2f seconds" % (time.clock() - start)
 
     def verbose(self, isVerbose = True):
         "Enabled/disables verbose output mode."
-        self.__verboseMode = isVerbose
+        self._verboseMode = isVerbose
 
     def version(self):
         "Returns the Kernel's version string."
-        return self.__version
+        return self._version
 
     def numCategories(self):
         "Returns the number of categories the Kernel has learned."
         # there's a one-to-one mapping between templates and categories
-        return self.__brain.numTemplates()
+        return self._brain.numTemplates()
         
     def resetBrain(self):
         "Erases all of the bot's knowledge."
-        del(self.__brain)
+        del(self._brain)
         self.__init__()
 
     def loadBrain(self, filename):
@@ -91,50 +91,50 @@ class Kernel:
 
         NOTE: the current contents of the 'brain' will be discarded!
         """
-        if self.__verboseMode: print "Loading brain from %s..." % filename,
+        if self._verboseMode: print "Loading brain from %s..." % filename,
         start = time.clock()
-        self.__brain.restore(filename)
-        if self.__verboseMode:
+        self._brain.restore(filename)
+        if self._verboseMode:
             end = time.clock() - start
-            print "done (%d categories in %.2f seconds)" % (self.__brain.numTemplates(), end)
+            print "done (%d categories in %.2f seconds)" % (self._brain.numTemplates(), end)
 
     def saveBrain(self, filename):
         "Dumps the contents of the bot's brain to a file on disk."
-        if self.__verboseMode: print "Saving brain to %s..." % filename,
+        if self._verboseMode: print "Saving brain to %s..." % filename,
         start = time.clock()
-        self.__brain.save(filename)
-        if self.__verboseMode:
+        self._brain.save(filename)
+        if self._verboseMode:
             print "done (%.2f seconds)" % (time.clock() - start)
 
-    def getPredicate(self, name, sessionID = __globalSessionID):
+    def getPredicate(self, name, sessionID = _globalSessionID):
         "Retrieves the value of the predicate 'name' from the specified session."
         try:
-            return self.__sessions[sessionID][name]
+            return self._sessions[sessionID][name]
         except:
             # no such session or predicate
-            if self.__verboseMode: print "No such predicate", name, "in session", sessionID
+            if self._verboseMode: print "No such predicate", name, "in session", sessionID
             return ""
 
-    def setPredicate(self, name, value, sessionID = __globalSessionID):
+    def setPredicate(self, name, value, sessionID = _globalSessionID):
         "Sets the value of the predicate 'name' in the specified session."
         try:
-            self.__sessions[sessionID][name] = value
+            self._sessions[sessionID][name] = value
         except:
             # silently fail if no such session exists
-            if self.__verboseMode: print "WARNING: no such sessionID", sessionID
+            if self._verboseMode: print "WARNING: no such sessionID", sessionID
 
-    def __addSession(self, sessionID):
+    def _addSession(self, sessionID):
         "Creates a new session with the specified ID string."
-        if not self.__sessions.has_key(sessionID):
-            self.__sessions[sessionID] = {}
-    def __deleteSession(self, sessionID):
+        if not self._sessions.has_key(sessionID):
+            self._sessions[sessionID] = {}
+    def _deleteSession(self, sessionID):
         "Deletes the specified session."
-        if self.__sessions.has_key(sessionID):
+        if self._sessions.has_key(sessionID):
             _sessions.pop(sessionID)
 
     def learn(self, filename):
         "Loads and learns the contents of the specified AIML file."
-        if self.__verboseMode: print "Loading %s..." % filename,
+        if self._verboseMode: print "Loading %s..." % filename,
         start = time.clock()
         # Load and parse the AIML file
         handler = LearnHandler()
@@ -143,29 +143,29 @@ class Kernel:
         # store the pattern/template pairs in the PatternMgr.
         for key,tem in handler.categories.items():
             pat,that = key
-            self.__brain.add(pat, that, tem)
+            self._brain.add(pat, that, tem)
 
-        if self.__verboseMode:
+        if self._verboseMode:
             print "done (%.2f seconds)" % (time.clock() - start)
 
-    def respond(self, input, sessionID = __globalSessionID):
+    def respond(self, input, sessionID = _globalSessionID):
         "Returns the Kernel's response to the input string."
         if len(input) == 0:
             return ""
         
         # Add the session, if it doesn't already exist
-        self.__addSession(sessionID)
+        self._addSession(sessionID)
         
         # Fetch the interpretable atom for the user's input
-        atom = self.__brain.match(input)
+        atom = self._brain.match(input)
         if atom is None:
-            if self.__verboseMode: print "No match found for input."
+            if self._verboseMode: print "No match found for input."
             return ""
 
         # Process the atom into a response string.
-        return self.__processAtom(atom, sessionID).strip()
+        return self._processAtom(atom, sessionID).strip()
 
-    def __processAtom(self,atom, sessionID):
+    def _processAtom(self,atom, sessionID):
         try:
             # if atom is a string, we can just return it as is.
             return atom + ""
@@ -177,11 +177,11 @@ class Kernel:
             # remaining elements are atom-specific, and should be
             # treated as additional atoms.
             try:
-                handlerFunc = self.__atomProcessors[atom[0]]
+                handlerFunc = self._atomProcessors[atom[0]]
             except:
                 # Oops -- there's no handler function for this atom
                 # type!
-                if self.__verboseMode: print "No handler found for atom", atom[0]
+                if self._verboseMode: print "No handler found for atom", atom[0]
                 return ""
             return handlerFunc(atom, sessionID)
 
@@ -191,14 +191,14 @@ class Kernel:
     ###################################################
 
     # condition
-    def __processCondition(self, atom, sessionID):
+    def _processCondition(self, atom, sessionID):
         # Condition atoms come in three flavors.  Each has different
         # attributes, and each handles their contents differently.
         attr = None
         response = ""
         try: attr = atom[1]
         except:
-            if self.__verboseMode: print "Missing attributes dict in __processCondition"
+            if self._verboseMode: print "Missing attributes dict in _processCondition"
             return response
         
         # The simplest case is when the condition tag has both a
@@ -210,10 +210,10 @@ class Kernel:
                 val = self.getPredicate(attr['name'], sessionID)
                 if val == attr['value']:
                     for a in atom[2:]:
-                        response += self.__processAtom(a,sessionID)
+                        response += self._processAtom(a,sessionID)
                     return response
             except:
-                if self.__verboseMode: print "Something amiss in condition/name/value"
+                if self._verboseMode: print "Something amiss in condition/name/value"
                 pass
         
         # If the condition atom has only a 'name' attribute, then its
@@ -256,12 +256,12 @@ class Kernel:
                         # do the test
                         if self.getPredicate(liName, sessionID) == liValue:
                             foundMatch = True
-                            response += self.__processAtom(li,sessionID)
+                            response += self._processAtom(li,sessionID)
                             break
                     except:
                         # No attributes, no name/value attributes, no
                         # such predicate/session, or processing error.
-                        if self.__verboseMode: print "Something amiss -- skipping listitem", li
+                        if self._verboseMode: print "Something amiss -- skipping listitem", li
                         continue
                 if not foundMatch:
                     # Check the last element of listitems.  If it has
@@ -270,41 +270,41 @@ class Kernel:
                         li = listitems[-1]
                         liAttr = li[1]
                         if not (liAttr.has_key('name') or liAttr.has_key('value')):
-                            response += self.__processAtom(li, sessionID)
+                            response += self._processAtom(li, sessionID)
                     except:
                         # listitems was empty, no attributes, missing
                         # name/value attributes, or processing error.
-                        if self.__verboseMode: print "error in default listitem"
+                        if self._verboseMode: print "error in default listitem"
                         pass
             except:
                 # Some other catastrophic cataclysm
-                if self.__verboseMode: print "catastrophic condition failure"
+                if self._verboseMode: print "catastrophic condition failure"
                 pass
         return response
         
     # date
-    def __processDate(self, atom, sessionID):
+    def _processDate(self, atom, sessionID):
         # Date atoms resolve to the current date and time.  There
         # doesn't seem to be any dictated format for the response,
         # so I go with whatever's simplest.
         return time.asctime()
 
     # formal
-    def __processFormal(self, atom, sessionID):
+    def _processFormal(self, atom, sessionID):
         # Formal atoms process their contents and then capitalize the
         # first letter of each word.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         return string.capwords(response)
 
     # gender
-    def __processGender(self,atom, sessionID):
+    def _processGender(self,atom, sessionID):
         # Gender atoms process their contents, and then swap the gender
         # of any third-person singular pronouns in the result.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         # NOTE: Correctly determining how to replace 'his' ('her' vs.
         # 'hers') and 'her' ('his' vs. 'him') is impossible without a
         # full-on natural language parser.
@@ -328,7 +328,7 @@ class Kernel:
         return string.join(words)
 
     # get
-    def __processGet(self, atom, sessionID):
+    def _processGet(self, atom, sessionID):
         # Get atoms return the value of a predicate from the specified
         # session.  The predicate to get is specified by the 'name'
         # attribute of the atom.  Any contents of the atom are ignored.
@@ -339,41 +339,41 @@ class Kernel:
             return ""
 
     # learn
-    def __processLearn(self, atom, sessionID):
+    def _processLearn(self, atom, sessionID):
         # Learn atoms contain one piece of data: an atom which
         # resolves to a filename for the bot to learn.
         filename = ""
         for a in atom[2:]:
-            filename += self.__processAtom(a, sessionID)
+            filename += self._processAtom(a, sessionID)
         self.learn(filename)
         return ""
 
     # li
-    def __processLi(self,atom, sessionID):
+    def _processLi(self,atom, sessionID):
         # Li (list item) tags are just containers used by <random> and
         # <condition> tags.  Their contents are processed and
         # returned.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         return response
 
     # lowercase
-    def __processLowercase(self,atom, sessionID):
+    def _processLowercase(self,atom, sessionID):
         # Lowercase atoms process their contents, and return the results
         # in all lower-case.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         return string.lower(response)
 
     # person
-    def __processPerson(self,atom, sessionID):
+    def _processPerson(self,atom, sessionID):
         # Person atoms process their contents, and then convert all
         # pronouns from 1st person to 3rd person, and vice versa.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         # NOTE: Correctly determining how to replace 'his' ('her' vs.
         # 'hers') and 'her' ('his' vs. 'him') is impossible without a
         # full-on natural language parser.
@@ -400,7 +400,7 @@ class Kernel:
         return string.join(words)
         
     # random
-    def __processRandom(self, atom, sessionID):
+    def _processRandom(self, atom, sessionID):
         # Random atoms contain one or more <li> atoms.  The
         # interpreter chooses one of them randomly, processes it, and
         # returns the result. Only the selected <li> atom is
@@ -413,17 +413,17 @@ class Kernel:
         # select and process a random listitem.
         random.shuffle(listitems)
         try:
-            return self.__processAtom(listitems[0], sessionID)
+            return self._processAtom(listitems[0], sessionID)
         except IndexError: # listitems is empty
             return ""
 
     # sentence
-    def __processSentence(self,atom, sessionID):
+    def _processSentence(self,atom, sessionID):
         # Sentence atoms capitalizes the first letter of the first
         # word of its contents.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         try:
             response = response.strip()
             words = string.split(response, " ", 1)
@@ -434,13 +434,13 @@ class Kernel:
             return ""
 
     # set
-    def __processSet(self, atom, sessionID):
+    def _processSet(self, atom, sessionID):
         # Set atoms processes its contents and assigns the results to
         # a predicate in the specified session.  The predicate to set
         # is specified by the required 'name' attribute of the atom.
         value = ""
         for a in atom[2:]:
-            value += self.__processAtom(a, sessionID)
+            value += self._processAtom(a, sessionID)
 
         try:
             self.setPredicate(atom[1]['name'], value, sessionID)
@@ -450,21 +450,21 @@ class Kernel:
         return ""
 
     # size
-    def __processSize(self,atom, sessionID):
+    def _processSize(self,atom, sessionID):
         # Size atoms return the number of categories learned.
         return str(self.numCategories())
 
     # srai
-    def __processSrai(self,atom, sessionID):
+    def _processSrai(self,atom, sessionID):
         # Srai atoms recursively return the response generated by
         # their contents, which must resolve to a valid AIML pattern.
         newInput = ""
         for a in atom[2:]:
-            newInput += self.__processAtom(a, sessionID)
+            newInput += self._processAtom(a, sessionID)
         return self.respond(newInput, sessionID)
 
     # system
-    def __processSystem(self,atom, sessionID):
+    def _processSystem(self,atom, sessionID):
         # System atoms cause a command to be executed. If the optional
         # 'mode' attribute is set to "async", the command is run in
         # the background and its output is ignored.  If mode is "sync"
@@ -484,7 +484,7 @@ class Kernel:
         # build up the command string
         command = ""
         for a in atom[2:]:
-            command += self.__processAtom(a, sessionID)
+            command += self._processAtom(a, sessionID)
 
         # execute the command.
         response = ""
@@ -506,44 +506,44 @@ class Kernel:
         return response
 
     # template
-    def __processTemplate(self,atom, sessionID):
+    def _processTemplate(self,atom, sessionID):
         # Template atoms are root nodes.  They process their
         # contents and return the results.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         return response
 
     # think
-    def __processThink(self,atom, sessionID):
+    def _processThink(self,atom, sessionID):
         # Think atoms process their sub-atoms, and then discard the
         # output. We can't skip the processing, because it could have
         # side effects (which is the whole point of the <think> tag in
         # the first place).
         for a in atom[2:]:
-            self.__processAtom(a, sessionID)
+            self._processAtom(a, sessionID)
         return ""
 
     # uppercase
-    def __processUppercase(self,atom, sessionID):
+    def _processUppercase(self,atom, sessionID):
         # Uppercase atoms process their contents, and return the results
         # in all caps.
         response = ""
         for a in atom[2:]:
-            response += self.__processAtom(a, sessionID)
+            response += self._processAtom(a, sessionID)
         return string.upper(response)
 
     # version
-    def __processVersion(self,atom, sessionID):
+    def _processVersion(self,atom, sessionID):
         # Version atoms resolve to the current interpreter version.
         # Any sub-atoms are ignored.
-        return self.__version
+        return self._version
 
 
 ##################################################
 ### Self-test functions follow                 ###
 ##################################################
-def __testTag(kern, tag, input, outputList):
+def _testTag(kern, tag, input, outputList):
     """
     Tests 'tag' by feeding the Kernel 'input'.  If the result matches any of
     the strings in 'outputList', the test passes.
@@ -563,15 +563,15 @@ if __name__ == "__main__":
     k.bootstrap(learnFiles=["self-test.aiml"])
 
     k.setPredicate('gender', 'male')
-    __testTag(k, 'condition test #1', 'test condition name value', ['You are handsome'])
+    _testTag(k, 'condition test #1', 'test condition name value', ['You are handsome'])
     k.setPredicate('gender', 'female')
-    __testTag(k, 'condition test #2', 'test condition name value', [''])
-    __testTag(k, 'condition test #3', 'test condition name', ['You are beautiful'])
+    _testTag(k, 'condition test #2', 'test condition name value', [''])
+    _testTag(k, 'condition test #3', 'test condition name', ['You are beautiful'])
     k.setPredicate('gender', 'robot')
-    __testTag(k, 'condition test #4', 'test condition name', ['You are genderless'])
-    __testTag(k, 'condition test #5', 'test condition', ['You are genderless'])
+    _testTag(k, 'condition test #4', 'test condition name', ['You are genderless'])
+    _testTag(k, 'condition test #5', 'test condition', ['You are genderless'])
     k.setPredicate('gender', 'male')
-    __testTag(k, 'condition test #6', 'test condition', ['You are handsome'])
+    _testTag(k, 'condition test #6', 'test condition', ['You are handsome'])
 
     # the date test will occasionally fail if the original and "test"
     # times cross a second boundary.  There's no good way to avoid
@@ -582,21 +582,21 @@ if __name__ == "__main__":
     succeeds.  So long as the response looks like a date/time string,
     there's nothing to worry about.
     """
-    if not __testTag(k, 'date', 'test date', ["The date is %s" % time.asctime()]):
+    if not _testTag(k, 'date', 'test date', ["The date is %s" % time.asctime()]):
         print date_warning
     
-    __testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
-    __testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
-    __testTag(k, 'get/set', 'test get and set', ["My favorite food is cheese"])
-    __testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
-    __testTag(k, 'random', 'test random', ["response #1", "response #2", "response #3"])
-    __testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])
-    __testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
-    __testTag(k, 'srai', "test srai", ["srai test passed"])
-    __testTag(k, 'system mode="sync"', "test system", ["The system says hello!"])
-    __testTag(k, 'think', "test think", [""])
-    __testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
-    __testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
+    _testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
+    _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
+    _testTag(k, 'get/set', 'test get and set', ["My favorite food is cheese"])
+    _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
+    _testTag(k, 'random', 'test random', ["response #1", "response #2", "response #3"])
+    _testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])
+    _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
+    _testTag(k, 'srai', "test srai", ["srai test passed"])
+    _testTag(k, 'system mode="sync"', "test system", ["The system says hello!"])
+    _testTag(k, 'think', "test think", [""])
+    _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
+    _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
 
     # Run an interactive interpreter
     print "\nEntering interactive mode (ctrl-c to exit)"
