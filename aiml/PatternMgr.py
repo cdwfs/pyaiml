@@ -194,15 +194,15 @@ and leading to the matching pattern, and tem is the matched template.
 		# Check underscore.
 		# Note: this is causing problems in the standard AIML set, and is
 		# currently disabled.
-#		if root.has_key(self._UNDERSCORE):
-#			# Must include the case where suf is [] in order to handle the case
-#			# where a * or _ is at the end of the pattern.
-#			for j in range(len(suffix)+1):
-#				suf = suffix[j:]
-#				pattern, template = self._match(suf, thatWords, root[self._UNDERSCORE])
-#				if template is not None:
-#					newPattern = [self._UNDERSCORE] + pattern
-#					return (newPattern, template)
+		if root.has_key(self._UNDERSCORE):
+			# Must include the case where suf is [] in order to handle the case
+			# where a * or _ is at the end of the pattern.
+			for j in range(len(suffix)+1):
+				suf = suffix[j:]
+				pattern, template = self._match(suf, thatWords, root[self._UNDERSCORE])
+				if template is not None:
+					newPattern = [self._UNDERSCORE] + pattern
+					return (newPattern, template)
 
 		# Check first
 		if root.has_key(first):
