@@ -5,6 +5,7 @@
 import marshal
 import re
 import string
+import sys
 
 class PatternMgr:
 	# special dictionary keys
@@ -20,7 +21,7 @@ class PatternMgr:
 		self._templateCount = 0
 		self._botName = "Nameless"
 		self._convertRE = re.compile("[^A-Z0-9_* ]")
-
+		self._whitespaceTransTable = string.maketrans("\n\t", "  ")
 
 	def setBotName(self, name):
 		"""Sets the name of the bot, used to match <bot name="name"> tags in
@@ -125,10 +126,11 @@ patterns.  The name must be a single word!"""
 		# text to all caps.
 		input = string.upper(pattern)
 		input = re.sub(self._convertRE, "", input)
-		if that == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
+		if that.strip() == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
+		thatInput = thatInput.translate(self._whitespaceTransTable)
 		thatInput = re.sub(self._convertRE, "", thatInput)
-		if topic == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
+		if topic.strip() == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
 		topicInput = string.upper(topic)
 		topicInput = re.sub(self._convertRE, "", topicInput)
 		
@@ -148,10 +150,10 @@ The 'starType' parameter specifies which type of star to find.  Legal values are
 		# text to all caps.
 		input = string.upper(pattern)
 		input = re.sub(self._convertRE, "", input)
-		if that == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
+		if that.strip() == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
 		thatInput = re.sub(self._convertRE, "", thatInput)
-		if topic == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
+		if topic.strip() == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
 		topicInput = string.upper(topic)
 		topicInput = re.sub(self._convertRE, "", topicInput)
 

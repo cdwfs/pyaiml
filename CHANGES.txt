@@ -5,6 +5,11 @@ version 0.8.1:
  - Fixed crashes under Windows9X when a "system" element is executed when
    w9xpopen.exe is unavailable.
  - Re-piped most errors and warnings to go to stderr instead of stdout.
+ - Fixed bug that would cause the the bot to stop responding to any input in a session
+   if the "that" or "topic" strings were 100% whitespace (but still not empty).
+ - Fixed bug that would cause multi-line "that" strings to become corrupted.  For
+   example, "Hello there.\nNice to meet you" would become "HELLO THERENICE TO MEET
+   YOU" when queried for that-matching.
 
 version 0.8:
  - Removed support for non-standard "mode" attribute in "system" elements.
