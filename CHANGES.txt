@@ -1,0 +1,13 @@
+version 0.2
+ - 50% speedup in Kernel.loadBrain() and Kernel.saveBrain().
+ - The optional 'learnFiles' and 'commands' arguments to
+   Kernel.bootstrap() can now be either strings or lists. This
+   allows multiple files/commands to be loaded during
+   initialization.
+ - Added support for <person> and <person2> tags.
+ - Added general word-substitution functionality.  This opens up
+   the potential for localizing PyAIML into non-English languages.
+   See DefaultSubs.py for more info.
+
+version 0.1 (released 12/8/2003):
+ - Initial release.
