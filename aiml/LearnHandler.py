@@ -28,17 +28,19 @@ class LearnHandler(ContentHandler):
 			self.__atomStack = []
 			self.__atomStack.append(['template',{}])
 		elif self.__inPattern:
-			# We currently ignore all XML elements inside patterns.
-			self.__currentPattern += " <%s" % name.encode("Latin-1")
-			for k,v in attr.items():
-				self.__currentPattern += '%s="%s"' % (k,v)
-			self.__currentPattern += ">"
+			pass # We currently ignore all XML inside patterns.
 		elif self.__inThat:
 			# We currently ignore all XML elements inside <that> patterns.
 			pass
 		elif self.__inTemplate:
-			# Starting a new element inside the current pattern
-			self.__atomStack.append([name.encode("Latin-1"),attr])			
+			# Starting a new element inside the current pattern.
+			# push the current element onto the atom stack.  First
+			# we need to convert 'attr' into a native Python dictionary,
+			# so it can later be marshaled.
+			attrDict = {}
+			for k,v in attr.items():
+				attrDict[k] = v
+			self.__atomStack.append([name.encode("Latin-1"),attrDict])
 		else:
 			pass # ignore all other elements
 

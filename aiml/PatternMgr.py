@@ -2,7 +2,7 @@
 # by Dr. Richard Wallace at the following site:
 # http://www.alicebot.org/documentation/matching.html
 
-import cPickle
+import marshal
 import re
 import string
 
@@ -23,7 +23,10 @@ class PatternMgr:
 	def save(self, filename):
 		"Dumps the current patterns to a file.  To restore later, use restore()."
 		try:
-			cPickle.dump(self.__root, open(filename, "wb"), cPickle.HIGHEST_PROTOCOL)
+			outFile = open(filename, "wb")
+			marshal.dump(self.__templateCount, outFile)
+			marshal.dump(self.__root, outFile)
+			outFile.close()
 		except Exception, e:
 			print "Error saving PatternMgr to file %s:" % filename
 			raise Exception, e
@@ -31,8 +34,10 @@ class PatternMgr:
 	def restore(self, filename):
 		"Restores a previously save()d collection of patterns."
 		try:
-			self.__root = cPickle.load(open(filename, "rb"))
-			self.__templateCount = self.__countTemplates(self.__root)
+			inFile = open(filename, "rb")
+			self.__templateCount = marshal.load(inFile)
+			self.__root = marshal.load(inFile)
+			inFile.close()
 		except Exception, e:
 			print "Error restoring PatternMgr from file %s:" % filename
 			raise Exception, e
@@ -134,18 +139,4 @@ class PatternMgr:
 	def numTemplates(self):
 		"Returns the number of templates currently stored."
 		return self.__templateCount
-
-	def __countTemplates(self,node):
-		"Recursively counts the number of templates in the tree."
-		keys = node.keys()
-		count = 0
-		# if this node has a template, increment the count
-		if node.has_key(self.__TEMPLATE):
-			count += 1
-
-		# recursively count the subtrees that AREN'T __TEMPLATE
-		for k in keys:
-			if k != self.__TEMPLATE:
-				count += self.__countTemplates(node[k])
-		return count
 			
