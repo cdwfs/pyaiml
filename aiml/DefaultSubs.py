@@ -51,21 +51,6 @@ defaultGender = {
 }
 
 defaultPerson = {
-    # 1st -> 2nd
-    "I": "you",
-    "me": "you",
-    "my": "your",
-    "mine": "yours",
-    "myself": "yourself",
-
-    # 2nd -> 1st
-    "you": "me",
-    "your": "my",
-    "yours": "mine",
-    "yourself": "myself",
-}
-
-defaultPerson2 = {
     # 1st->3rd (masculine)
     "I": "he",
     "me": "him",
@@ -85,6 +70,22 @@ defaultPerson2 = {
     "hers":"mine",
     "herself":"myself",
 }
+
+defaultPerson2 = {
+    # 1st -> 2nd
+    "I": "you",
+    "me": "you",
+    "my": "your",
+    "mine": "yours",
+    "myself": "yourself",
+
+    # 2nd -> 1st
+    "you": "me",
+    "your": "my",
+    "yours": "mine",
+    "yourself": "myself",
+}
+
 
 # TODO: this list is far from complete
 defaultNormal = {

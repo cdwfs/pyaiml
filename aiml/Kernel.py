@@ -600,8 +600,7 @@ session data in memory, so it should be called shortly after startup."""
             response += self._processElement(e, sessionID)
         # An atomic <person/> tag, is a shortcut for <person><star/><person>.
         if len(elem[2:]) == 0:
-            response = self._processElement(['star',{}], sessionID)
-    
+            response = self._processElement(['star',{}], sessionID)    
         # run it through the 'person' subber
         return self._subbers['person'].sub(response)
 
@@ -924,9 +923,9 @@ if __name__ == "__main__":
     _testTag(k, 'id', 'test id', ["Your id is _global"])
     _testTag(k, 'input', 'test input', ['You just said: test input'])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
-    _testTag(k, 'person', 'test person', ['YOU think me know that my actions threaten you and yours.'])
-    _testTag(k, 'person (no contents)', 'test person I Love Lucy', ['YOU Love Lucy'])
-    _testTag(k, 'person2', 'test person2', ['HE think i knows that my actions threaten him and his.'])
+    _testTag(k, 'person', 'test person', ['HE think i knows that my actions threaten him and his.'])
+    _testTag(k, 'person2', 'test person2', ['YOU think me know that my actions threaten you and yours.'])
+    _testTag(k, 'person2 (no contents)', 'test person2 I Love Lucy', ['YOU Love Lucy'])
     _testTag(k, 'random', 'test random', ["response #1", "response #2", "response #3"])
     _testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])
     _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])

@@ -1,3 +1,5 @@
+ - Oops; I've implemented 'person' as 'person2' and vice versa this whole time!
+   Swapped them; they should each behave correctly now.
  - A bit of code cleanup, with an emphasis on using proper XML/AIML terminology
    whenever possible.
  - Fixed some exception-masking in the 'condition' element processor, which could
