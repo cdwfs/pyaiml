@@ -21,7 +21,7 @@ class PatternMgr:
 		self._root = {}
 		self._templateCount = 0
 		self._botName = u"Nameless"
-		punctuation = "\"`~1@#$%^&*()-_=+[{]}\|;:',<.>/?"
+		punctuation = "\"`~!@#$%^&*()-_=+[{]}\|;:',<.>/?"
 		self._puncStripRE = re.compile("[" + re.escape(punctuation) + "]")
 		self._whitespaceRE = re.compile("\s", re.LOCALE | re.UNICODE)
 
