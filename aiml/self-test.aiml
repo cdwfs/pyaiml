@@ -118,6 +118,10 @@ updating the tests in Kernel.py!
 <pattern>TEST SR *</pattern>
 <template>srai results: <sr/></template>
 </category>
+<category>
+<pattern>TEST NESTED SR *</pattern>
+<template><srai>test sr <star/></srai></template>
+</category>
 
 <!-- srai -->
 <category>
@@ -127,6 +131,7 @@ updating the tests in Kernel.py!
 <pattern>TEST SRAI</pattern>
 <template><srai>srai target</srai></template>
 </category>
+
 <!-- star -->
 <category>
 <pattern>* TEST STAR BEGIN</pattern>
