@@ -11,27 +11,32 @@ import glob
 import os
 import random
 import re
+import shelve
 import string
 import time
+import threading
 import xml.sax
 
 
 class Kernel:
     # module constants
-    _globalSessionID = 0 # key of the global session (duh)
+    _globalSessionID = "_global" # key of the global session (duh)
     _maxHistorySize = 10 # maximum length of the _inputs and _responses lists
     # special predicate keys
-    _inputHistory = 1     # keys to a queue (list) of recent user input
-    _outputHistory = 2    # keys to a queue (list) of recent responses.
+    _inputHistory = "_inputHistory"     # keys to a queue (list) of recent user input
+    _outputHistory = "_outputHistory"    # keys to a queue (list) of recent responses.
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "0.5"
+        self._version = "PyAIML 0.6"
         self._botName = "Nameless"
         self._brain = PatternMgr()
+        self._respondLock = threading.RLock()
 
         # set up the sessions        
-        self._sessions = {}        
+        self._sessions = {}
+        self._sessionsArePersistent = False
+        self._sessionsDir = "sessions"
         self._addSession(self._globalSessionID)
 
         # set up the word substitutors (subbers):
@@ -71,6 +76,12 @@ class Kernel:
             "version":      self._processVersion,
         }
 
+    def __del__(self):
+        # close the session files
+        for id in self._sessions.keys():
+            if self._sessionsArePersistent:
+                self._sessions[id].close()
+            self._sessions.pop(id)
     def bootstrap(self, brainFile = None, learnFiles = [], commands = []):
         """
         Prepares a Kernel object for use.
@@ -101,7 +112,7 @@ class Kernel:
         try: cmds = [ commands + "" ]
         except: pass
         for cmd in cmds:
-            print self.respond(cmd)
+            print self._respond(cmd, self._globalSessionID)
             
         if self._verboseMode:
             print "Kernel bootstrap completed in %.2f seconds" % (time.clock() - start)
@@ -188,15 +199,48 @@ this format).  Each section of the file is loaded into its own substituter."""
             for k,v in parser.items(s):
                 self._subbers[s][k] = v
 
+    def persistentSessions(self, enable, sessionsDir = None):
+        """Enables/disables persistent sessions.
+
+If disabled, all session data is lost when the Kernel is destroyed.
+The optional sessionsDir argument specifies a directory where persistent
+session data should be stored.  Calling this function erases all existing
+session data in memory, so it should be called shortly after startup."""
+        if enable == self._sessionsArePersistent:
+            return
+        self._sessionsArePersistent = enable
+        if enable:
+            # store the sessions dir
+            if sessionsDir is not None: self._sessionsDir = sessionsDir
+            # delete existing sessions
+            for id in self._sessions.keys():
+                self._sessions.pop(id)
+        else:
+            # close and remove all existing sessions
+            for id in self._sessions.keys():
+                self._sessions[id].close()
+                self._sessions.pop(id)
+        
+
     def _addSession(self, sessionID):
         "Creates a new session with the specified ID string."
         if self._sessions.has_key(sessionID):
             return
-        # Initialize the special predicates 
-        self._sessions[sessionID] = {
-            self._inputHistory: [],
-            self._outputHistory: []
-        }
+        # Create the session.  Use either a dict or a shelve object,
+        # depending on whether sessions should be persistent.
+        if self._sessionsArePersistent:
+            if not os.path.isdir(self._sessionsDir):
+                os.mkdir(self._sessionsDir)
+            sessionFile = "%s/%s.db" % (self._sessionsDir, sessionID)
+            self._sessions[sessionID] = shelve.open(sessionFile, protocol=-1)
+        else:
+            self._sessions[sessionID] = {}
+        # Initialize the special predicates
+        if not self._sessions[sessionID].has_key(self._inputHistory):
+            self._sessions[sessionID][self._inputHistory] = []
+        if not self._sessions[sessionID].has_key(self._outputHistory):
+            self._sessions[sessionID][self._outputHistory] = []
+        
     def _deleteSession(self, sessionID):
         "Deletes the specified session."
         if self._sessions.has_key(sessionID):
@@ -224,18 +268,50 @@ this format).  Each section of the file is loaded into its own substituter."""
         if len(input) == 0:
             return ""
         
+        # prevent other threads from stomping all over us.
+        self._respondLock.acquire()
+
         # Add the session, if it doesn't already exist
         self._addSession(sessionID)
-
-        # run the input through the 'normal' subber
-        subbedInput = self._subbers['normal'].sub(input)
 
         # Add the input to the history list before fetching the
         # response, so that <input/> tags work properly.
         inputHistory = self.getPredicate(self._inputHistory, sessionID)
         inputHistory.append(input)
-        if len(inputHistory) > self._maxHistorySize:
-            inputHistory.pop(0)        
+        while len(inputHistory) > self._maxHistorySize:
+            inputHistory.pop(0)
+        self.setPredicate(self._inputHistory, inputHistory, sessionID)
+        
+        # Fetch the response
+        response = self._respond(input, sessionID)
+
+        # add the data from this exchange to the history lists
+        outputHistory = self.getPredicate(self._outputHistory, sessionID)
+        outputHistory.append(response)
+        while len(outputHistory) > self._maxHistorySize:
+            outputHistory.pop(0)
+        self.setPredicate(self._outputHistory, outputHistory, sessionID)
+
+        # sync the session file
+        try: self._sessions[sessionID].sync()
+        except AttributeError:
+            pass # built-in dicts don't need to be sync'd.
+        
+        # release the lock and return
+        self._respondLock.release()
+        return response
+
+    # This version of _respond() just fetches the response for some input.
+    # It does not mess with the input and output histories.  Recursive calls
+    # to respond() spawned from tags like <srai> should call this function
+    # instead of respond().
+    def _respond(self, input, sessionID):
+        "Private version of respond(), does the real work."
+        if len(input) == 0:
+            return ""
+
+        # run the input through the 'normal' subber
+        subbedInput = self._subbers['normal'].sub(input)
 
         # fetch the bot's previous response, to pass to the match()
         # function as 'that'.
@@ -243,8 +319,8 @@ this format).  Each section of the file is loaded into its own substituter."""
         try: that = outputHistory[-1]
         except IndexError: that = ""
         subbedThat = self._subbers['normal'].sub(that)
-        
-        # Fetch the interpretable atom for the user's input
+
+        # Find the atom that matches this input
         response = ""
         atom = self._brain.match(subbedInput, subbedThat)
         if atom is None:
@@ -252,13 +328,6 @@ this format).  Each section of the file is loaded into its own substituter."""
         else:
             # Process the atom into a response string.
             response = self._processAtom(atom, sessionID).strip()
-
-        # add the data from this exchange to the history lists
-        outputHistory = self.getPredicate(self._outputHistory, sessionID)
-        outputHistory.append(response)
-        if len(outputHistory) > self._maxHistorySize:
-            outputHistory.pop(0)
-            
         return response
 
     def _processAtom(self,atom, sessionID):
@@ -562,7 +631,7 @@ this format).  Each section of the file is loaded into its own substituter."""
         # <sr/> is a shortcut for <srai><star/></srai>.  So basically, we
         # compute the <star/> string, and then respond to it.
         star = self._processAtom(['star',{}], sessionID)
-        response = self.respond(star, sessionID)
+        response = self._respond(star, sessionID)
         return response
 
     # srai
@@ -572,7 +641,7 @@ this format).  Each section of the file is loaded into its own substituter."""
         newInput = ""
         for a in atom[2:]:
             newInput += self._processAtom(a, sessionID)
-        return self.respond(newInput, sessionID)
+        return self._respond(newInput, sessionID)
 
     # star
     def _processStar(self, atom, sessionID):
@@ -777,3 +846,10 @@ if __name__ == "__main__":
     # Run an interactive interpreter
     #print "\nEntering interactive mode (ctrl-c to exit)"
     #while True: print k.respond(raw_input("> "))
+
+    k.__del__()
+    try:
+        os.remove("sessions/_global.db")
+        os.rmdir("sessions")
+    except OSError:
+        pass

@@ -1,6 +1,18 @@
 version 0.6
  - Added support for the empty 'person' tag (it implicitly uses 'star' as
    its input if none is provided).
+ - Oops; Kernel.respond() was DEFINITELY not thread-safe.  Now it is, provided
+   you're using Python's standard 'threading' module. If not, you'll have to
+   provide your own mutual-exclusion system to ensure that only one thread
+   is calling Kernel.respond() at a time.
+ - Recursive tags ('srai' and 'sr') no longer add their intermediate results
+   to the input and output history.
+ - EXPERIMENTAL FEATURE: persistent sessions.  If enabled using
+   Kernel.persistentSessions(True), session data will be written to disk
+   after every response.  This lets session data be preserved when the
+   Kernel is destroyed, at the expense of a small performance hit (all
+   that extra disk I/O).  The semantics of this feature may change in future
+   releases!
 
 version 0.5
  - The filename inside Learn tags can now contain wildcards.  Besides
