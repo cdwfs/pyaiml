@@ -10,6 +10,7 @@ The following tags are currently supported:
 <formal>
 <gender>
 <get>
+<id>
 <input>
 <learn>
 <li>
@@ -36,7 +37,6 @@ Support for the following tags should be implemented in the next version:
 The following tags are not supported:
 
 <gossip>
-<id>
 <if>/<else>
 <javascript> (see notes)
 <secure> (see notes)

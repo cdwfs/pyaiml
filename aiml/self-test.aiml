@@ -58,6 +58,12 @@ updating the tests in Kernel.py!
 <template>I like <set name="food">cheese</set>.  My favorite food is <get name="food"/></template>
 </category>
 
+<!-- id -->
+<category>
+<pattern>TEST ID</pattern>
+<template>Your id is <id/></template>
+</category>
+
 <!-- input -->
 <category>
 <pattern>TEST INPUT</pattern>

@@ -54,6 +54,7 @@ class Kernel:
             "formal":       self._processFormal,
             "gender":       self._processGender,
             "get":          self._processGet,
+            "id":           self._processId,
             "input":        self._processInput,
             "learn":        self._processLearn,
             "li":           self._processLi,
@@ -499,6 +500,13 @@ session data in memory, so it should be called shortly after startup."""
             # no name attribute, no such predicate, or no such session
             return ""
 
+    # id
+    def _processId(self, atom, sessionID):
+        # Id atoms are supposed to return some sort of unique "user id".
+        # I choose to return the sessionID, which is the closest thing to
+        # a user id that I've got.
+        return sessionID
+
     # input
     def _processInput(self, atom, sessionID):
         # Input atoms return an entry from the input history for a
@@ -823,6 +831,7 @@ if __name__ == "__main__":
     _testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
     _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
     _testTag(k, 'get/set', 'test get and set', ["I like cheese.  My favorite food is cheese"])
+    _testTag(k, 'id', 'test id', ["Your id is _global"])
     _testTag(k, 'input', 'test input', ['You just said: test input'])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
     _testTag(k, 'person', 'test person', ['YOU think me know that my actions threaten you and yours.'])
