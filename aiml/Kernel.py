@@ -26,6 +26,7 @@ class Kernel:
     def __init__(self, ):
         self._verboseMode = True
         self._version = "0.4"
+        self._botName = "Nameless"
         self._brain = PatternMgr()
 
         # set up the sessions        
@@ -41,6 +42,7 @@ class Kernel:
         
         # set up the atom processors
         self._atomProcessors = {
+            "bot":          self._processBot,
             "condition":    self._processCondition,
             "date":         self._processDate,
             "formal":       self._processFormal,
@@ -115,6 +117,16 @@ class Kernel:
         "Returns the number of categories the Kernel has learned."
         # there's a one-to-one mapping between templates and categories
         return self._brain.numTemplates()
+
+    def setBotName(self, name):
+        """Sets the bot's name.  The name must be a single word!"""
+        # Collapse a multi-word name into a single word
+        self._botName = string.join(name.split())
+        # must update the name in the brain as well
+        self._brain.setBotName(self._botName)
+    def getBotName(self):
+        "Returns the bot's name."
+        return self._botName
         
     def resetBrain(self):
         "Erases all of the bot's knowledge."
@@ -274,6 +286,21 @@ this format).  Each section of the file is loaded into its own substituter."""
     ###################################################
     ### Individual atom-processing functions follow ###
     ###################################################
+
+    # bot
+    def _processBot(self, atom, sessionID):
+        # Bot atoms used to do a lot, but they've been supplanted by <get>.
+        # Now they're only used to return the bot's name.  They have a single
+        # attribute, 'name', which takes a single value, 'name'.
+        try:
+            attrName = atom[1]['name']
+            if attrName != 'name':
+                if self._verboseMode: print 'Warning: <bot> tags must look like <bot name="name">'
+                return ""
+        except KeyError:
+            if self._verboseMode: print 'Warning: <bot> tags must look like <bot name="name">'
+            return ""
+        return self._botName
 
     # condition
     def _processCondition(self, atom, sessionID):
@@ -695,6 +722,8 @@ if __name__ == "__main__":
     # Run some self-tests
     k = Kernel()
     k.bootstrap(learnFiles="self-test.aiml")
+
+    _testTag(k, 'bot', 'test bot', ["My name is Nameless"])
 
     k.setPredicate('gender', 'male')
     _testTag(k, 'condition test #1', 'test condition name value', ['You are handsome'])

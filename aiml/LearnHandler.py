@@ -29,10 +29,15 @@ class LearnHandler(ContentHandler):
 			self._atomStack = []
 			self._atomStack.append(['template',{}])
 		elif self._inPattern:
-			pass # We currently ignore all XML inside patterns.
+			if name == "bot" and attr.has_key("name") and attr["name"] == "name":
+				# Insert a special character string that the PatternMgr will
+				# replace with the bot's name.
+				self._currentPattern += " BOT_NAME "
 		elif self._inThat:
-			# We currently ignore all XML elements inside <that> patterns.
-			pass
+			if name == "bot" and attr.has_key("name") and attr["name"] == "name":
+				# Insert a special character string that the PatternMgr will
+				# replace with the bot's name.
+				self._currentThat += " BOT_NAME "
 		elif self._inTemplate:
 			# Starting a new element inside the current pattern.
 			# push the current element onto the atom stack.  First

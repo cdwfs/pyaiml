@@ -12,10 +12,18 @@ class PatternMgr:
 	_STAR       = 1
 	_TEMPLATE   = 2
 	_THAT       = 3
+	_BOT_NAME   = 4
 	
 	def __init__(self):
 		self._root = {}
 		self._templateCount = 0
+		self._botName = "Nameless"
+
+	def setBotName(self, name):
+		"""Sets the name of the bot, used to match <bot name="name"> tags in
+patterns.  The name must be a single word!"""
+		# Collapse a multi-word name into a single word
+		self._botName = string.join(name.split())
 
 	def dump(self):
 		pprint.pprint(self._root)
@@ -25,6 +33,7 @@ class PatternMgr:
 		try:
 			outFile = open(filename, "wb")
 			marshal.dump(self._templateCount, outFile)
+			marshal.dump(self._botName, outFile)
 			marshal.dump(self._root, outFile)
 			outFile.close()
 		except Exception, e:
@@ -36,6 +45,7 @@ class PatternMgr:
 		try:
 			inFile = open(filename, "rb")
 			self._templateCount = marshal.load(inFile)
+			self._botName = marshal.load(inFile)
 			self._root = marshal.load(inFile)
 			inFile.close()
 		except Exception, e:
@@ -56,6 +66,8 @@ class PatternMgr:
 				key = self._UNDERSCORE
 			elif key == "*":
 				key = self._STAR
+			elif key == "BOT_NAME":
+				key = self._BOT_NAME
 			if not node.has_key(key):
 				node[key] = {}
 			node = node[key]
@@ -198,7 +210,14 @@ and leading to the matching pattern, and tem is the matched template.
 			if template is not None:
 				newPattern = [first] + pattern
 				return (newPattern, template)
-			
+
+		# check bot name
+		if root.has_key(self._BOT_NAME) and first == self._botName:
+			pattern, template = self._match(suffix, thatWords, root[self._BOT_NAME])
+			if template is not None:
+				newPattern = [first] + pattern
+				return (newPattern, template)
+		
 		# check star
 		if root.has_key(self._STAR):
 			# Must include the case where suf is [] in order to handle the case

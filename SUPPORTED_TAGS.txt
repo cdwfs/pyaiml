@@ -4,6 +4,7 @@ found online at http://www.alicebot.org/documentation/aiml-reference.html
 
 The following tags are currently supported:
 
+<bot name="name"> (see notes)
 <condition>
 <date>
 <formal>
@@ -30,7 +31,6 @@ The following tags are currently supported:
 
 Support for the following tags should be implemented in the next version:
 
-<bot name="name">
 <thatstar>
 
 The following tags are not supported:
@@ -46,6 +46,11 @@ The following tags are not supported:
 ------------------------------------------------------------------
 
 NOTES ON SPECIFIC TAGS:
+
+<bot name="name">
+To set the bot's name, use Kernel.setBotName("NewName").  Note that the
+name *MUST* be a single word!  Use Kernel.getBotName() to query the bot's
+name in your code.
 
 <javascript>
 Support for the JavaScript tag is not anticipated; one of the design

@@ -6,6 +6,12 @@ updating the tests in Kernel.py!
 -->
 
 <aiml version="1.0">
+<!-- bot -->
+<category>
+<pattern>TEST BOT</pattern>
+<template>My name is <bot name="name"/></template>
+</category>
+
 <!-- condition -->
 <category>
 <pattern>TEST CONDITION NAME VALUE</pattern>
