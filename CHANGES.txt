@@ -1,8 +1,10 @@
 version 0.6
  - Completely rewrote the LearnHandler class (which handles all AIML parsing)
-   to be much less forgiving of incorrect AIML.
- - Added support for the empty 'person' tag (it implicitly uses 'star' as
-   its input if none is provided).
+   to be much less forgiving of incorrect AIML.  Currently, any AIML errors
+   outside of "template" elements should be caught and reported at load-time.
+   AIML errors inside templates are still not detected until run-time.
+ - Added support for atomic 'person' and 'person2' tags (they implicitly use
+   'star' as their contents if none are provided).
  - Oops; Kernel.respond() was DEFINITELY not thread-safe.  Now it is, provided
    you're using Python's standard 'threading' module. If not, you'll have to
    provide your own mutual-exclusion system to ensure that only one thread
@@ -16,6 +18,13 @@ version 0.6
    that extra disk I/O).  The semantics of this feature may change in future
    releases!
  - Added support for the "id" tag (it returns the session ID).
+ - Added support for the "topic", "topicstar" and "thatstar" tags.
+ - Commented up the test.py file.
+ - Added a summary to the end of the Kernel.py self-test (since there are now
+   too many tests to fit on screen).
+ - Added support for multi-sentence input.  The user's input is split into
+   individual sentences, each of which is treated as a completely separate
+   piece of input.  I'm *pretty* sure this is the Right Way(tm).
 
 version 0.5
  - The filename inside Learn tags can now contain wildcards.  Besides
