@@ -104,6 +104,7 @@ patterns.  The name must be a single word!"""
 		convertRE = re.compile("[^A-Z0-9_* ]")
 		input = string.upper(pattern)
 		input = re.sub(convertRE, "", input)
+		if that == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
 		thatInput = re.sub(convertRE, "", thatInput)
 		
@@ -118,6 +119,7 @@ patterns.  The name must be a single word!"""
 		convertRE = re.compile("[^A-Z0-9_* ]")
 		input = string.upper(pattern)
 		input = re.sub(convertRE, "", input)
+		if that == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
 		thatInput = re.sub(convertRE, "", thatInput)
 
@@ -125,12 +127,13 @@ patterns.  The name must be a single word!"""
 		patMatch, template = self._match(input.split(), thatInput.split(), self._root)
 		if template == None:
 			return ""
+		# We're interested in the portion of the pattern before the _THAT section
+		try: patMatch = patMatch[:patMatch.index(self._THAT)]
+		except ValueError:
+			pass
 
 		# compare the input string to the matched pattern, word by word.
 		words = input.split()
-		try: words = words[:words.index(self._THAT)]
-		except ValueError:
-			pass
 		inStar = False
 		start = end = j = 0
 		for i in range(len(words)):
