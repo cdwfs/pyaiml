@@ -71,6 +71,10 @@ updating the tests in Kernel.py!
 <pattern>TEST PERSON</pattern>
 <template><person>I think you know that your actions threaten me and mine.</person></template>
 </category>
+<category>
+<pattern>TEST PERSON *</pattern>
+<template><person/></template>
+</category>
 
 <!-- person2 -->
 <category>

@@ -484,6 +484,11 @@ this format).  Each section of the file is loaded into its own substituter."""
         response = ""
         for a in atom[2:]:
             response += self._processAtom(a, sessionID)
+        # A person tag with no contents, a la <person/>, is a shortcut
+        # for <person><star/><person>.
+        if len(atom[2:]) == 0:
+            response = self._processAtom(['star',{}], sessionID)
+    
         # run it through the 'person' subber
         return self._subbers['person'].sub(response)
 
@@ -556,7 +561,7 @@ this format).  Each section of the file is loaded into its own substituter."""
     def _processSr(self,atom,sessionID):
         # <sr/> is a shortcut for <srai><star/></srai>.  So basically, we
         # compute the <star/> string, and then respond to it.
-        star = self._processStar(atom, sessionID)
+        star = self._processAtom(['star',{}], sessionID)
         response = self.respond(star, sessionID)
         return response
 
@@ -752,6 +757,7 @@ if __name__ == "__main__":
     _testTag(k, 'input', 'test input', ['You just said: test input'])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
     _testTag(k, 'person', 'test person', ['YOU think me know that my actions threaten you and yours.'])
+    _testTag(k, 'person (no contents)', 'test person I Love Lucy', ['YOU Love Lucy'])
     _testTag(k, 'person2', 'test person2', ['HE think i knows that my actions threaten him and his.'])
     _testTag(k, 'random', 'test random', ["response #1", "response #2", "response #3"])
     _testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])

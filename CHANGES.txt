@@ -1,3 +1,7 @@
+version 0.6
+ - Added support for the empty 'person' tag (it implicitly uses 'star' as
+   its input if none is provided).
+
 version 0.5
  - The filename inside Learn tags can now contain wildcards.  Besides
    simplifying the loading of multiple files, this allows the possibility
