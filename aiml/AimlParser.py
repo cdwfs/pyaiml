@@ -60,6 +60,12 @@ class AimlParser(ContentHandler):
 		column = self._locator.getColumnNumber()
 		return "(line %d, column %d)" % (line, column)
 
+	def startElementNS(self, name, qname, attr):
+		#print "NAME:", name
+		#print "QNAME:", qname
+		#print "ATTR:", attr
+		pass
+
 	def startElement(self, name, attr):
 		# Wrapper around _startElement, which catches errors in _startElement()
 		# and keeps going.
