@@ -304,7 +304,8 @@ class Kernel:
 
         #ensure that input is a unicode string
         try: input = input.decode(self._textEncoding, 'replace')
-        except UnicodeEncodeError: pass
+        except UnicodeError: pass
+        except AttributeError: pass
         
         # prevent other threads from stomping all over us.
         self._respondLock.acquire()
@@ -342,7 +343,8 @@ class Kernel:
         
         # release the lock and return
         self._respondLock.release()
-        return finalResponse.encode(self._textEncoding)
+        try: return finalResponse.encode(self._textEncoding)
+        except UnicodeError: return finalResponse
 
     # This version of _respond() just fetches the response for some input.
     # It does not mess with the input and output histories.  Recursive calls
