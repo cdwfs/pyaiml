@@ -1,3 +1,9 @@
+version 0.6.1:
+ - Fixed undefined variable exception that was thrown whenever there was no
+   match for the user's input.
+ - Fixed an infinite recursion bug caused by processing two or more nested
+   'srai' or 'sr' elements.
+
 version 0.6
  - Completely rewrote the LearnHandler class (which handles all AIML parsing)
    to be much less forgiving of incorrect AIML.  Currently, any AIML errors
