@@ -43,15 +43,15 @@ class Kernel:
             "version":      self.__processVersion,
         }
 
-    def bootstrap(self, brainFile = None, learnFile = None, commands = []):
+    def bootstrap(self, brainFile = None, learnFiles = [], commands = []):
         """
         Prepares a Kernel object for use.
 
         If a brainFile argument is provided, the Kernel attempts to
         load the brain at the specified filename.
 
-        If learnFile is provided, the Kernel attempts to load the
-        specified AIML file.
+        If learnFiles is provided, the Kernel attempts to load the
+        specified AIML files.
 
         Finally, each of the input strings in the commands list is
         passed to respond().
@@ -59,8 +59,8 @@ class Kernel:
         start = time.clock()
         if brainFile:
             self.loadBrain(brainFile)
-        if learnFile:
-            self.learn(learnFile)
+        for file in learnFiles:
+            self.learn(file)
         for cmd in commands:
             print self.respond(cmd)
         if self.__verboseMode:
@@ -149,6 +149,10 @@ class Kernel:
             print "done (%.2f seconds)" % (time.clock() - start)
 
     def respond(self, input, sessionID = __globalSessionID):
+        "Returns the Kernel's response to the input string."
+        if len(input) == 0:
+            return ""
+        
         # Add the session, if it doesn't already exist
         self.__addSession(sessionID)
         
@@ -556,7 +560,7 @@ def __testTag(kern, tag, input, outputList):
 if __name__ == "__main__":
     # Run some self-tests
     k = Kernel()
-    k.bootstrap(learnFile="self-test.aiml")
+    k.bootstrap(learnFiles=["self-test.aiml"])
 
     k.setPredicate('gender', 'male')
     __testTag(k, 'condition test #1', 'test condition name value', ['You are handsome'])
