@@ -1,6 +1,7 @@
 """
 This file contains the public interface to the aiml module.
 """
+import AimlParser
 import DefaultSubs
 import Utils
 from PatternMgr import PatternMgr
@@ -31,7 +32,7 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.8.3"
+        self._version = "PyAIML 0.8.4"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
         self._textEncoding = "UTF-8"
@@ -242,7 +243,7 @@ session dictionaries."""
             if self._verboseMode: print "Loading %s..." % f,
             start = time.clock()
             # Load and parse the AIML file.
-            parser = xml.sax.make_parser(["AimlParser", "aiml.AimlParser"])
+            parser = AimlParser.create_parser()
             handler = parser.getContentHandler()
             handler.setEncoding(self._textEncoding)
             try: parser.parse(f)

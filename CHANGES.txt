@@ -1,3 +1,7 @@
+version 0.8.4:
+ - Fixed bug in AimlParser creation, if the aiml module was not in the same
+   directory as the script that imported it.
+
 version 0.8.3:
  - Reworked the way AimlParser objects are created, to allow support for
    XML namespaces in a future version.
