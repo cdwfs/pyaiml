@@ -23,7 +23,7 @@ The following tags are currently supported:
 	<size>
 	<sr>
 	<srai>
-	<star> (see notes)
+	<star>
 	<system>
 	<that>
 	<thatstar>
@@ -92,13 +92,3 @@ with this:
 	</condition>
 Then, use the Kernel.setPredicate() call to set the "secure" predicate to
 "yes" for any session that you wish to be secure.
-
-<star>
-The star tag takes an optional "index" attribute, specifying which
-star in the pattern to expand and return.  However, the AIML reference
-seems to specify that there can only be one * in a given pattern,
-and PyAIML adheres to this restriction.  Therefore, index values other
-than 1 are meaningless (and ignored).
-UPDATE: Okay, I was wrong; you can have multiple stars in a pattern.
-I'm still working on support for this, though, so for now it won't
-work yet.

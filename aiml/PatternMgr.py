@@ -150,7 +150,7 @@ patterns.  The name must be a single word!"""
 		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)
 		return template
 
-	def star(self, starType, pattern, that, topic):
+	def star(self, starType, pattern, that, topic, index):
 		"""Returns a string, the portion of pattern that was matched by a *.
 
 The 'starType' parameter specifies which type of star to find.  Legal values are:
@@ -192,29 +192,49 @@ The 'starType' parameter specifies which type of star to find.  Legal values are
 			raise ValueError, "starType must be in ['star', 'thatstar', 'topicstar']"
 		
 		# compare the input string to the matched pattern, word by word.
-		inStar = False
-		start = end = j = 0
+		# At the end of this loop, if foundTheRightStar is true, start and
+		# end will contain the start and end indices (in "words") of
+		# the substring that the desired star matched.
+		foundTheRightStar = False
+		start = end = j = numStars = k = 0
 		for i in range(len(words)):
-			# check for the end of the input string
-			if patMatch[j] in [self._THAT]:
+			# This condition is true after processing a star
+			# that ISN'T the one we're looking for.
+			if i < k:
+				continue
+			# If we're reached the end of the pattern, we're done.
+			if j == len(patMatch):
 				break
-			if not inStar:
-				# if the two words are the same, advance the indices
-				if patMatch[j] in [self._STAR, self._UNDERSCORE]:
-					# a star is born!
-					inStar = True
+			if not foundTheRightStar:
+				if patMatch[j] in [self._STAR, self._UNDERSCORE]: #we got a star
+					numStars += 1
+					if numStars == index:
+						# This is the star we care about.
+						foundTheRightStar = True
 					start = i
-					# if the star is the last element in the pattern, we're done.
-					if patMatch[-1] in [self._STAR, self._UNDERSCORE]:
-						end = len(words)
-						break;
-				j += 1 # next word
-			else:
-				if words[i:] == patMatch[j:]:
-					end = i-1
+					# Iterate through the rest of the string.
+					for k in range (i, len(words)):
+						# If the star is at the end of the pattern,
+						# we know exactly where it ends.
+						if j+1  == len (patMatch):
+							end = len (words)
+							break
+						# If the words have started matching the
+						# pattern again, the star has ended.
+						if patMatch[j+1] == words[k]:
+							end = k - 1
+							i = k
+							break
+				# If we just finished processing the star we cared
+				# about, we exit the loop early.
+				if foundTheRightStar:
 					break
+			# Move to the next element of the pattern.
+			j += 1
+			
 		# extract the star words from the original, unmutilated input.
-		if inStar:
+		if foundTheRightStar:
+			#print string.join(pattern.split()[start:end+1])
 			if starType == 'star': return string.join(pattern.split()[start:end+1])
 			elif starType == 'thatstar': return string.join(that.split()[start:end+1])
 			elif starType == 'topicstar': return string.join(topic.split()[start:end+1])
