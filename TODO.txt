@@ -1,9 +1,5 @@
 Laundry list of future tasks, in no particular order:
 
- - i18n.  The biggest places where this is necessary is in __processGender,
-   __processPerson and __processPerson2.  The substitution tables should
-   probably be moved into an external language-specific file (a la J-Alice's
-   substitutions.xml).
  - error reporting.  There's too many silent failures, especially in the
    atom-processing functions.  If anything goes wrong, the code catches the
    exception and just returns an empty string.  This may be acceptable
