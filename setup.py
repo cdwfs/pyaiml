@@ -2,6 +2,8 @@
 from distutils.core import setup
 import glob
 
+package_prefix = "Lib/site-packages/aiml"
+
 setup(name="PyAIML",
     version="0.1",
     author="Cort Stratton",
@@ -10,9 +12,7 @@ setup(name="PyAIML",
     url="http://pyaiml.sourceforge.net/",
     packages=["aiml"],
     data_files=[
-        ("aiml", glob.glob("aiml\\self-test.aiml")),
-        (".", glob.glob("*.txt")),
-        #("standard", glob.glob("standard\\*.aiml")),
-        #(".", ("j-alice.ini", "std-startup.xml", "README.txt", "substitutions.xml", "my-howie.aiml", "howie.ini")),	  
+        (package_prefix, glob.glob("aiml/self-test.aiml")),
+        (package_prefix, glob.glob("*.txt")),
     ],
 )
