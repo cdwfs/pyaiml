@@ -12,6 +12,8 @@ The following tags are currently supported:
 <learn>
 <li>
 <lowercase>
+<person>
+<person2>
 <random>
 <sentence>
 <set>
@@ -25,8 +27,6 @@ The following tags are currently supported:
 Support for the following tags should be implemented in the next version:
 
 <input>
-<person>
-<person2>
 <star>
 <that>
 
