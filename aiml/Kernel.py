@@ -30,8 +30,7 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.6.1"
-        self._botName = "Nameless"
+        self._version = "PyAIML 0.7"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
 
@@ -41,6 +40,10 @@ class Kernel:
         self._sessionsDir = "sessions"
         self._addSession(self._globalSessionID)
 
+        # Set up the bot predicates
+        self._botPredicates = {}
+        self.setBotPredicate("name", "Nameless")
+
         # set up the word substitutors (subbers):
         self._subbers = {}
         self._subbers['gender'] = WordSub(DefaultSubs.defaultGender)
@@ -48,8 +51,8 @@ class Kernel:
         self._subbers['person2'] = WordSub(DefaultSubs.defaultPerson2)
         self._subbers['normal'] = WordSub(DefaultSubs.defaultNormal)
         
-        # set up the atom processors
-        self._atomProcessors = {
+        # set up the element processors
+        self._elementProcessors = {
             "bot":          self._processBot,
             "condition":    self._processCondition,
             "date":         self._processDate,
@@ -135,15 +138,14 @@ class Kernel:
         # there's a one-to-one mapping between templates and categories
         return self._brain.numTemplates()
 
-    def setBotName(self, name):
-        """Sets the bot's name.  The name must be a single word!"""
-        # Collapse a multi-word name into a single word
-        self._botName = string.join(name.split())
-        # must update the name in the brain as well
-        self._brain.setBotName(self._botName)
+    def setBotName(self, newName):
+        "Sets the bot's name.  THIS FUNCTION IS DEPRECATED -- use setBotPredicate instead"
+        print "NOTE: Kernel.setBotName() is deprecated. Use Kernel.setBotPredicate() instead."
+        self.setBotPredicate("name", newName)
     def getBotName(self):
-        "Returns the bot's name."
-        return self._botName
+        "Returns the bot's name. THIS FUNCTION IS DEPRECATED -- use getBotPredicate instead."
+        print "NOTE: Kernel.getBotName() is deprecated. Use Kernel.getBotPredicate() instead."
+        return self.getBotPredicate("name")
         
     def resetBrain(self):
         "Erases all of the bot's knowledge."
@@ -174,16 +176,26 @@ class Kernel:
 
     def getPredicate(self, name, sessionID = _globalSessionID):
         "Retrieves the value of the predicate 'name' from the specified session."
-        try:
-            return self._sessions[sessionID][name]
-        except:
-            # no such session or predicate
-            return ""
+        try: return self._sessions[sessionID][name]
+        except KeyError: return ""
 
     def setPredicate(self, name, value, sessionID = _globalSessionID):
         "Sets the value of the predicate 'name' in the specified session."
         self._addSession(sessionID) # add the session, if it doesn't already exist.
         self._sessions[sessionID][name] = value
+
+    def getBotPredicate(self, name):
+        "Retrieves the value of the specified bot predicate."
+        try: return self._botPredicates[name]
+        except KeyError: return ""
+
+    def setBotPredicate(self, name, value):
+        "Sets the value of the specified bot predicate."
+        self._botPredicates[name] = value
+        # Clumsy hack: if updating the bot name, we must update the
+        # name in the brain as well
+        if name == "name":
+            self._brain.setBotName(self.getBotPredicate("name"))
 
     def loadSubs(self, filename):
         """Load a substitutions file.  The file must be in the Windows-style INI
@@ -346,12 +358,12 @@ session data in memory, so it should be called shortly after startup."""
 
         # Determine the final response.
         response = ""
-        atom = self._brain.match(subbedInput, subbedThat, subbedTopic)
-        if atom is None:
+        elem = self._brain.match(subbedInput, subbedThat, subbedTopic)
+        if elem is None:
             if self._verboseMode: print "No match found for input:", input
         else:
-            # Process the atom into a response string.
-            response += self._processAtom(atom, sessionID).strip()
+            # Process the element into a response string.
+            response += self._processElement(elem, sessionID).strip()
             response += " "
         response = response.strip()
 
@@ -362,53 +374,50 @@ session data in memory, so it should be called shortly after startup."""
         
         return response
 
-    def _processAtom(self,atom, sessionID):
-        # The first element of the 'atom' list is a
-        # string describing the type of the atom (== the name of
+    def _processElement(self,elem, sessionID):
+        # The first element of the 'elem' list is a
+        # string describing the type of the element (== the name of
         # the XML tag).  The second element is a dictionary
         # containing attributes passed to the XML tag.  Any
-        # remaining elements are atom-specific, and should be
-        # treated as additional atoms.
+        # remaining elements are element-specific, and should be
+        # treated as additional elements.
         try:
-            handlerFunc = self._atomProcessors[atom[0]]
+            handlerFunc = self._elementProcessors[elem[0]]
         except:
-            # Oops -- there's no handler function for this atom
+            # Oops -- there's no handler function for this element
             # type!
-            if self._verboseMode: print "No handler found for atom", atom[0]
-            # Process the unknown atom's contents and return them unaltered.
+            if self._verboseMode: print "No handler found for <%s> element" % elem[0]
+            # Process the unknown element's contents and return them unaltered.
             response = ""
-            for a in atom[2:]:
-                response += self._processAtom(a, sessionID)
+            for e in elem[2:]:
+                response += self._processElement(e, sessionID)
             return response
-        return handlerFunc(atom, sessionID)
+        return handlerFunc(elem, sessionID)
 
 
-    ###################################################
-    ### Individual atom-processing functions follow ###
-    ###################################################
+    ######################################################
+    ### Individual element-processing functions follow ###
+    ######################################################
 
     # bot
-    def _processBot(self, atom, sessionID):
-        # Bot atoms used to do a lot, but they've been supplanted by <get>.
-        # Now they're only used to return the bot's name.  They have a single
-        # attribute, 'name', which takes a single value, 'name'.
+    def _processBot(self, elem, sessionID):
+        # Bot elements are used to fetch the value of global,
+        # read-only "bot predicates".  The values of these predicates
+        # cannot be set using AIML; they must be initialized with
+        # Kernel.setBotPredicate().
         try:
-            attrName = atom[1]['name']
-            if attrName != 'name':
-                if self._verboseMode: print 'Warning: <bot> tags must look like <bot name="name">'
-                return ""
+            attrName = elem[1]['name']
+            return self.getBotPredicate(attrName)
         except KeyError:
-            if self._verboseMode: print 'Warning: <bot> tags must look like <bot name="name">'
             return ""
-        return self._botName
-
+        
     # condition
-    def _processCondition(self, atom, sessionID):
-        # Condition atoms come in three flavors.  Each has different
+    def _processCondition(self, elem, sessionID):
+        # Condition elements come in three flavors.  Each has different
         # attributes, and each handles their contents differently.
         attr = None
         response = ""
-        try: attr = atom[1]
+        try: attr = elem[1]
         except:
             if self._verboseMode: print "Missing attributes dict in _processCondition"
             return response
@@ -416,39 +425,39 @@ session data in memory, so it should be called shortly after startup."""
         # The simplest case is when the condition tag has both a
         # 'name' and a 'value' attribute.  In this case, if the
         # predicate 'name' has the value 'value', then the contents of
-        # the atom are processed and returned.
+        # the element are processed and returned.
         if attr.has_key('name') and attr.has_key('value'):
             try:
                 val = self.getPredicate(attr['name'], sessionID)
                 if val == attr['value']:
-                    for a in atom[2:]:
-                        response += self._processAtom(a,sessionID)
+                    for e in elem[2:]:
+                        response += self._processElement(e,sessionID)
                     return response
             except:
                 if self._verboseMode: print "Something amiss in condition/name/value"
-                pass
+                raise
         
-        # If the condition atom has only a 'name' attribute, then its
-        # contents are a series of <li> atoms, each of which has a
+        # If the condition element has only a 'name' attribute, then its
+        # contents are a series of <li> elements, each of which has a
         # 'value' attribute.  The list is scanned from top to bottom
-        # until a match is found.  Optionally, the last <li> atom can
+        # until a match is found.  Optionally, the last <li> element can
         # have no 'value' attribute, in which case it is processed and
         # returned if no other match is found.
         #
-        # If the condition atom has neither a 'name' nor a 'value'
+        # If the condition element has neither a 'name' nor a 'value'
         # attribute, then it behaves almost exactly like the previous
-        # case, except that each <li> subatom (except the optional
+        # case, except that each <li> subelement (except the optional
         # last entry) must now include a 'name' attribute.
         else:
             try:
                 name = None
                 if attr.has_key('name'):
                     name = attr['name']
-                # Get the list of <li> atoms
+                # Get the list of <li> elemnents
                 listitems = []
-                for a in atom[2:]:
-                    if a[0] == 'li':
-                        listitems.append(a)
+                for e in elem[2:]:
+                    if e[0] == 'li':
+                        listitems.append(e)
                 # iterate through the list looking for a condition that
                 # matches.
                 foundMatch = False
@@ -468,13 +477,13 @@ session data in memory, so it should be called shortly after startup."""
                         # do the test
                         if self.getPredicate(liName, sessionID) == liValue:
                             foundMatch = True
-                            response += self._processAtom(li,sessionID)
+                            response += self._processElement(li,sessionID)
                             break
                     except:
                         # No attributes, no name/value attributes, no
                         # such predicate/session, or processing error.
                         if self._verboseMode: print "Something amiss -- skipping listitem", li
-                        continue
+                        raise
                 if not foundMatch:
                     # Check the last element of listitems.  If it has
                     # no 'name' or 'value' attribute, process it.
@@ -482,161 +491,158 @@ session data in memory, so it should be called shortly after startup."""
                         li = listitems[-1]
                         liAttr = li[1]
                         if not (liAttr.has_key('name') or liAttr.has_key('value')):
-                            response += self._processAtom(li, sessionID)
+                            response += self._processElement(li, sessionID)
                     except:
                         # listitems was empty, no attributes, missing
                         # name/value attributes, or processing error.
                         if self._verboseMode: print "error in default listitem"
-                        pass
+                        raise
             except:
                 # Some other catastrophic cataclysm
                 if self._verboseMode: print "catastrophic condition failure"
-                pass
+                raise
         return response
         
     # date
-    def _processDate(self, atom, sessionID):
-        # Date atoms resolve to the current date and time.  There
+    def _processDate(self, elem, sessionID):
+        # Date elements resolve to the current date and time.  There
         # doesn't seem to be any dictated format for the response,
         # so I go with whatever's simplest.
         return time.asctime()
 
     # formal
-    def _processFormal(self, atom, sessionID):
-        # Formal atoms process their contents and then capitalize the
+    def _processFormal(self, elem, sessionID):
+        # Formal elements process their contents and then capitalize the
         # first letter of each word.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         return string.capwords(response)
 
     # gender
-    def _processGender(self,atom, sessionID):
-        # Gender atoms process their contents, and then swap the gender
+    def _processGender(self,elem, sessionID):
+        # Gender elements process their contents, and then swap the gender
         # of any third-person singular pronouns in the result.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         # Run the results through the gender subber.
         return self._subbers['gender'].sub(response)
 
     # get
-    def _processGet(self, atom, sessionID):
-        # Get atoms return the value of a predicate from the specified
+    def _processGet(self, elem, sessionID):
+        # Get elements return the value of a predicate from the specified
         # session.  The predicate to get is specified by the 'name'
-        # attribute of the atom.  Any contents of the atom are ignored.
+        # attribute of the element.  Any contents of the element are ignored.
         try:
-            return self.getPredicate(atom[1]['name'], sessionID)
+            return self.getPredicate(elem[1]['name'], sessionID)
         except:
             # no name attribute, no such predicate, or no such session
             return ""
 
     # id
-    def _processId(self, atom, sessionID):
-        # Id atoms are supposed to return some sort of unique "user id".
+    def _processId(self, elem, sessionID):
+        # Id elements are supposed to return some sort of unique "user id".
         # I choose to return the sessionID, which is the closest thing to
         # a user id that I've got.
         return sessionID
 
     # input
-    def _processInput(self, atom, sessionID):
-        # Input atoms return an entry from the input history for a
+    def _processInput(self, elem, sessionID):
+        # Input elements return an entry from the input history for a
         # given session.  The optional 'index' attribute specifies how
         # far back to look (1 means the last input, 2 is the one
-        # before that, and so on).  The contents of the atom (there
+        # before that, and so on).  The contents of the element (there
         # shouldn't be any) are ignored.
         inputHistory = self.getPredicate(self._inputHistory, sessionID)
-        index = 1
-        try:
-            index = int(atom[1]['index'])
-        except:
-            pass
+        try: index = int(elem[1]['index'])
+        except: index = 1
         try: return inputHistory[-index]
         except IndexError:
             if self._verboseMode: print "No such index", index, "while processing <input> element."
             return ""
 
     # learn
-    def _processLearn(self, atom, sessionID):
-        # Learn atoms contain one piece of data: an atom which
+    def _processLearn(self, elem, sessionID):
+        # Learn elements contain one piece of data: an element which
         # resolves to a filename for the bot to learn.
         filename = ""
-        for a in atom[2:]:
-            filename += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            filename += self._processElement(e, sessionID)
         self.learn(filename)
         return ""
 
     # li
-    def _processLi(self,atom, sessionID):
-        # Li (list item) tags are just containers used by <random> and
-        # <condition> tags.  Their contents are processed and
+    def _processLi(self,elem, sessionID):
+        # Li (list item) elements are just containers used by <random>
+        # and <condition> tags.  Their contents are processed and
         # returned.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         return response
 
     # lowercase
-    def _processLowercase(self,atom, sessionID):
-        # Lowercase atoms process their contents, and return the results
+    def _processLowercase(self,elem, sessionID):
+        # Lowercase elements process their contents, and return the results
         # in all lower-case.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         return string.lower(response)
 
     # person
-    def _processPerson(self,atom, sessionID):
-        # Person atoms process their contents, and then convert all
+    def _processPerson(self,elem, sessionID):
+        # Person elements process their contents, and then convert all
         # pronouns from 1st person to 2nd person, and vice versa.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         # An atomic <person/> tag, is a shortcut for <person><star/><person>.
-        if len(atom[2:]) == 0:
-            response = self._processAtom(['star',{}], sessionID)
+        if len(elem[2:]) == 0:
+            response = self._processElement(['star',{}], sessionID)
     
         # run it through the 'person' subber
         return self._subbers['person'].sub(response)
 
     # person2
-    def _processPerson2(self,atom, sessionID):
-        # Person2 atoms process their contents, and then convert all
+    def _processPerson2(self,elem, sessionID):
+        # Person2 elements process their contents, and then convert all
         # pronouns from 1st person to 3nd person, and vice versa.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         # An atomic <person2/> tag, is a shortcut for <person><star/><person>.
-        if len(atom[2:]) == 0:
-            response = self._processAtom(['star',{}], sessionID)
+        if len(elem[2:]) == 0:
+            response = self._processElement(['star',{}], sessionID)
         # run it through the 'person2' subber
         return self._subbers['person2'].sub(response)
         
     # random
-    def _processRandom(self, atom, sessionID):
-        # Random atoms contain one or more <li> atoms.  The
+    def _processRandom(self, elem, sessionID):
+        # Random elements contain one or more <li> elements.  The
         # interpreter chooses one of them randomly, processes it, and
-        # returns the result. Only the selected <li> atom is
-        # processed.  Non-<li> subatoms are ignored.
+        # returns the result. Only the selected <li> element is
+        # processed.  Non-<li> subelements are ignored.
         listitems = []
-        for a in atom[2:]:
-            if a[0] == 'li':
-                listitems.append(a)
+        for e in elem[2:]:
+            if e[0] == 'li':
+                listitems.append(e)
                 
         # select and process a random listitem.
         random.shuffle(listitems)
         try:
-            return self._processAtom(listitems[0], sessionID)
+            return self._processElement(listitems[0], sessionID)
         except IndexError: # listitems is empty
             return ""
 
     # sentence
-    def _processSentence(self,atom, sessionID):
-        # Sentence atoms capitalizes the first letter of the first
+    def _processSentence(self,elem, sessionID):
+        # Sentence elements capitalizes the first letter of the first
         # word of its contents.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         try:
             response = response.strip()
             words = string.split(response, " ", 1)
@@ -647,52 +653,52 @@ session data in memory, so it should be called shortly after startup."""
             return ""
 
     # set
-    def _processSet(self, atom, sessionID):
-        # Set atoms processes its contents and assigns the results to
+    def _processSet(self, elem, sessionID):
+        # Set elements processes its contents and assigns the results to
         # a predicate in the specified session.  The predicate to set
-        # is specified by the required 'name' attribute of the atom.
-        # The contents of the atom are also returned.
+        # is specified by the required 'name' attribute of the element.
+        # The contents of the element are also returned.
         value = ""
-        for a in atom[2:]:
-            value += self._processAtom(a, sessionID)
-        try: self.setPredicate(atom[1]['name'], value, sessionID)
+        for e in elem[2:]:
+            value += self._processElement(e, sessionID)
+        try: self.setPredicate(elem[1]['name'], value, sessionID)
         except KeyError:
             if self._verboseMode: print "Missing 'name' attribute in <set> tag"
             
         return value
 
     # size
-    def _processSize(self,atom, sessionID):
-        # Size atoms return the number of categories learned.
+    def _processSize(self,elem, sessionID):
+        # Size elements return the number of categories learned.
         return str(self.numCategories())
 
     # sr
-    def _processSr(self,atom,sessionID):
+    def _processSr(self,elem,sessionID):
         # <sr/> is a shortcut for <srai><star/></srai>.  So basically, we
         # compute the <star/> string, and then respond to it.
-        star = self._processAtom(['star',{}], sessionID)
+        star = self._processElement(['star',{}], sessionID)
         response = self._respond(star, sessionID)
         return response
 
     # srai
-    def _processSrai(self,atom, sessionID):
-        # Srai atoms recursively return the response generated by
+    def _processSrai(self,elem, sessionID):
+        # Srai elements recursively return the response generated by
         # their contents, which must resolve to a valid AIML pattern.
         newInput = ""
-        for a in atom[2:]:
-            newInput += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            newInput += self._processElement(e, sessionID)
         return self._respond(newInput, sessionID)
 
     # star
-    def _processStar(self, atom, sessionID):
-        # Star atoms return the text fragment matched by the "*" character
+    def _processStar(self, elem, sessionID):
+        # Star elements return the text fragment matched by the "*" character
         # in the input pattern.  For example, if the input "Hello Tom Smith,
         # how are you?" matched the pattern "HELLO * HOW ARE YOU", then a
         # <star/> tag in the template would evaluate to "Tom Smith".
         # There is an optional "index" attribute, which specifies which
         # star to expand.  However, since AIML patterns are only allowed
         # to have one * each, only an index of 1 really makes sense.
-        try: index = int(atom[1]['index'])
+        try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
             if self._verboseMode: print "WARNING: index>1 has no meaning in <star> tags"
@@ -709,18 +715,18 @@ session data in memory, so it should be called shortly after startup."""
         return response
     
     # system
-    def _processSystem(self,atom, sessionID):
-        # System atoms cause a command to be executed. If the optional
+    def _processSystem(self,elem, sessionID):
+        # System elements cause a command to be executed. If the optional
         # 'mode' attribute is set to "async", the command is run in
         # the background and its output is ignored.  If mode is "sync"
         # (the default), the process is executed, and the interpreter
-        # blocks until it exits.  In this case, the atom returns any
+        # blocks until it exits.  In this case, the element returns any
         # output of the command.
 
         # determine the mode
         syncMode = True
         try:
-            attr = atom[1]
+            attr = elem[1]
             if attr['mode'] == 'async':
                 syncMode = False
         except:
@@ -728,8 +734,8 @@ session data in memory, so it should be called shortly after startup."""
 
         # build up the command string
         command = ""
-        for a in atom[2:]:
-            command += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            command += self._processElement(e, sessionID)
 
         # execute the command.
         response = ""
@@ -751,25 +757,27 @@ session data in memory, so it should be called shortly after startup."""
         return response
 
     # template
-    def _processTemplate(self,atom, sessionID):
-        # Template atoms are root nodes.  They process their
+    def _processTemplate(self,elem, sessionID):
+        # Template elements are root nodes.  They process their
         # contents and return the results.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         return response
 
     # text
-    def _processText(self,atom, sessionID):
-        # Text atoms are simple wrappers around raw text strings. They
-        # have no attributes, and cannot contain other atoms in their
+    def _processText(self,elem, sessionID):
+        # Text elements are simple wrappers around raw text strings. They
+        # have no attributes, and cannot contain other elements in their
         # contents -- instead, they contain a single text string, which
         # is returned immediately.
-        return atom[2]
+        try: elem[2] + ""
+        except TypeError: raise TypeError, "Text element contents are not text"
+        return elem[2]
 
     # that
-    def _processThat(self,atom, sessionID):
-        # That atoms (inside templates) are the output equivilant of
+    def _processThat(self,elem, sessionID):
+        # That elements (inside templates) are the output equivilant of
         # <input> elements; they return one of the Kernel's previous
         # responses, as specified by the optional 'index' attribute.
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
@@ -778,7 +786,7 @@ session data in memory, so it should be called shortly after startup."""
             # According to the AIML spec, the index attribute contains two
             # values, 'nx,ny'.  Only the first one seems to be relevant
             # though.
-            index = int(atom[1]['index'].split(',')[0])
+            index = int(elem[1]['index'].split(',')[0])
         except:
             pass
         try: return outputHistory[-index]
@@ -787,12 +795,12 @@ session data in memory, so it should be called shortly after startup."""
             return ""
 
     # thatstar
-    def _processThatstar(self, atom, sessionID):
-        # Thatstar atoms are similar to star atoms, except that where <star/>
+    def _processThatstar(self, elem, sessionID):
+        # Thatstar elements are similar to star elements, except that where <star/>
         # returns the portion of the input pattern that was matched by a *,
         # <thatstar/> returns the portion of the "that" pattern that was
         # matched by a *.
-        try: index = int(atom[1]['index'])
+        try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
             if self._verboseMode: print "WARNING: index>1 has no meaning in <thatstar> tags"
@@ -809,22 +817,22 @@ session data in memory, so it should be called shortly after startup."""
         return response
 
     # think
-    def _processThink(self,atom, sessionID):
-        # Think atoms process their sub-atoms, and then discard the
+    def _processThink(self,elem, sessionID):
+        # Think elements process their sub-elements, and then discard the
         # output. We can't skip the processing, because it could have
         # side effects (which is the whole point of the <think> tag in
         # the first place).
-        for a in atom[2:]:
-            self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            self._processElement(e, sessionID)
         return ""
 
     # topicstar
-    def _processTopicstar(self, atom, sessionID):
-        # Topicstar atoms are similar to star atoms, except that where <star/>
+    def _processTopicstar(self, elem, sessionID):
+        # Topicstar elements are similar to star elements, except that where <star/>
         # returns the portion of the input pattern that was matched by a *,
         # <topicstar/> returns the portion of the "topic" pattern that was
         # matched by a *.
-        try: index = int(atom[1]['index'])
+        try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
             if self._verboseMode: print "WARNING: index>1 has no meaning in <topicstar> tags"
@@ -841,18 +849,18 @@ session data in memory, so it should be called shortly after startup."""
         return response
 
     # uppercase
-    def _processUppercase(self,atom, sessionID):
-        # Uppercase atoms process their contents, and return the results
+    def _processUppercase(self,elem, sessionID):
+        # Uppercase elements process their contents, and return the results
         # in all caps.
         response = ""
-        for a in atom[2:]:
-            response += self._processAtom(a, sessionID)
+        for e in elem[2:]:
+            response += self._processElement(e, sessionID)
         return string.upper(response)
 
     # version
-    def _processVersion(self,atom, sessionID):
-        # Version atoms resolve to the current interpreter version.
-        # Any sub-atoms are ignored.
+    def _processVersion(self,elem, sessionID):
+        # Version elements resolve to the current interpreter version.
+        # Any sub-elements are ignored.
         return self.version()
 
 

@@ -1,3 +1,12 @@
+ - A bit of code cleanup, with an emphasis on using proper XML/AIML terminology
+   whenever possible.
+ - Fixed some exception-masking in the 'condition' element processor, which could
+   prevent AIML parse errors from being reported.
+ - Added full support for the "bot" tag (previously only the 'bot name="name"'
+   form was supported).  Bot predicates are set using the Kernel.setBotPredicate()
+   function.  Note that Kernel.getBotName() and Kernel.setBotName() have been
+   deprecated, and will disappear in a future release.
+
 version 0.6.1:
  - Fixed undefined variable exception that was thrown whenever there was no
    match for the user's input.
