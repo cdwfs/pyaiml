@@ -244,6 +244,7 @@ session dictionaries."""
             # Load and parse the AIML file.
             parser = xml.sax.make_parser(["AimlParser", "aiml.AimlParser"])
             handler = parser.getContentHandler()
+            handler.setEncoding(self._textEncoding)
             try: parser.parse(f)
             except xml.sax.SAXParseException, msg:
                 err = "\nFATAL PARSE ERROR in file %s:\n%s\n" % (f,msg)

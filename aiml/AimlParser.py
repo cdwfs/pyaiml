@@ -56,6 +56,11 @@ class AimlHandler(ContentHandler):
 		"Returns the number of errors found while parsing the current document."
 		return self._numParseErrors
 
+	def setEncoding(self, encoding):
+		"""Sets the text encoding to use when encoding strings read from XML.
+Defaults to 'UTF-8'."""
+		self._encoding = encoding
+
 	def _location(self):
 		"Returns a string describing the current location in the source file."
 		line = self._locator.getLineNumber()
