@@ -216,24 +216,20 @@ this format).  Each section of the file is loaded into its own substituter."""
         return self._processAtom(atom, sessionID).strip()
 
     def _processAtom(self,atom, sessionID):
+        # The first element of the 'atom' list is a
+        # string describing the type of the atom (== the name of
+        # the XML tag).  The second element is a dictionary
+        # containing attributes passed to the XML tag.  Any
+        # remaining elements are atom-specific, and should be
+        # treated as additional atoms.
         try:
-            # if atom is a string, we can just return it as is.
-            return atom + ""
-        except TypeError:
-            # otherwise, atom is a list.  The first element is a
-            # string describing the type of the atom (== the name of
-            # the XML tag).  The second element is a dictionary
-            # containing attributes passed to the XML tag.  Any
-            # remaining elements are atom-specific, and should be
-            # treated as additional atoms.
-            try:
-                handlerFunc = self._atomProcessors[atom[0]]
-            except:
-                # Oops -- there's no handler function for this atom
-                # type!
-                if self._verboseMode: print "No handler found for atom", atom[0]
-                return ""
-            return handlerFunc(atom, sessionID)
+            handlerFunc = self._atomProcessors[atom[0]]
+        except:
+            # Oops -- there's no handler function for this atom
+            # type!
+            if self._verboseMode: print "No handler found for atom", atom[0]
+            return ""
+        return handlerFunc(atom, sessionID)
 
 
     ###################################################
@@ -285,7 +281,7 @@ this format).  Each section of the file is loaded into its own substituter."""
                 # Get the list of <li> atoms
                 listitems = []
                 for a in atom[2:]:
-                    if type(a) == type([]) and a[0] == 'li':
+                    if a[0] == 'li':
                         listitems.append(a)
                 # iterate through the list looking for a condition that
                 # matches.
@@ -427,7 +423,7 @@ this format).  Each section of the file is loaded into its own substituter."""
         # processed.  Non-<li> subatoms are ignored.
         listitems = []
         for a in atom[2:]:
-            if type(a) == type([]) and a[0] == 'li':
+            if a[0] == 'li':
                 listitems.append(a)
                 
         # select and process a random listitem.
@@ -629,5 +625,5 @@ if __name__ == "__main__":
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
 
     # Run an interactive interpreter
-    print "\nEntering interactive mode (ctrl-c to exit)"
-    while True: print k.respond(raw_input("> "))
+    #print "\nEntering interactive mode (ctrl-c to exit)"
+    #while True: print k.respond(raw_input("> "))
