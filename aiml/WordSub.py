@@ -1,7 +1,6 @@
-"""
-This module implements the WordSub class, modelled after a recipe in
-"Python Cookbook" (Recipe 3.14, "Replacing Multiple Patterns
-in a Single Pass" by Xavier Defrang).
+"""This module implements the WordSub class, modelled after a recipe
+in "Python Cookbook" (Recipe 3.14, "Replacing Multiple Patterns in a
+Single Pass" by Xavier Defrang).
 
 Usage:
 Use this class like a dictionary to add before/after pairs:
@@ -37,15 +36,22 @@ class WordSub(dict):
     """All-in-one multiple-string-substitution class."""
 
     def _wordToRegex(self, word):
+        """Convert a word to a regex object which matches the word."""
         return r"\b%s\b" % re.escape(word)
     
     def _update_regex(self):
-        """Build re object based on the keys of the current dictionary."""
+        """Build re object based on the keys of the current
+        dictionary.
+
+        """
         self._regex = re.compile("|".join(map(self._wordToRegex, self.keys())))
         self._regexIsDirty = False
 
     def __init__(self, defaults = {}):
-        """Initialize the object, and populate it with the entries in the defaults dict."""
+        """Initialize the object, and populate it with the entries in
+        the defaults dictionary.
+
+        """
         self._regex = None
         self._regexIsDirty = True
         for k,v in defaults.items():

@@ -278,8 +278,10 @@ Defaults to 'UTF-8'."""
 		self.endElement(elem)
 		
 	def endElement(self, name):
-		# Wrapper around _endElement which catches errors in _characters()
-		# and keeps going.
+		"""Wrapper around _endElement which catches errors in _characters()
+		and keeps going.
+
+		"""		
 		if self._state == self._STATE_OutsideAiml:
 			# If we're outside of an AIML element, ignore all tags
 			return
@@ -307,6 +309,12 @@ Defaults to 'UTF-8'."""
 				self._skipCurrentCategory = True
 
 	def _endElement(self, name):
+		"""Verify that an AIML end element is valid in the current
+		context.
+
+		Raises an AimlParserError if an illegal end element is encountered.
+
+		"""
 		if name == "aiml":
 			# </aiml> tags are only legal in the InsideAiml state
 			if self._state != self._STATE_InsideAiml:
@@ -403,10 +411,13 @@ Defaults to 'UTF-8'."""
 	}
 
 	def _validateElemStart(self, name, attr, version):
-		"Tests the validity of an element starting inside a <template> element."
-		# This function raises an AimlParserError exception if it the tag is
-		# invalid.  Otherwise, no news is good news.
-		
+		"""Test the validity of an element starting inside a <template>
+		element.
+
+		This function raises an AimlParserError exception if it the tag is
+		invalid.  Otherwise, no news is good news.
+
+		"""		
 		# Check the element's attributes.  Make sure that all required
 		# attributes are present, and that any remaining attributes are
 		# valid options.		
@@ -489,6 +500,7 @@ Defaults to 'UTF-8'."""
 		return True
 
 def create_parser():
+	"""Create and return an AIML parser object."""
 	parser = xml.sax.make_parser()
 	handler = AimlHandler("UTF-8")
 	parser.setContentHandler(handler)

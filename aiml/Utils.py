@@ -1,10 +1,10 @@
-"""
-This file contains assorted general utility functions used by other
+"""This file contains assorted general utility functions used by other
 modules in the PyAIML package.
+
 """
 
 def sentences(s):
-    "Splits the string s into a list of sentences."
+    """Split the string s into a list of sentences."""
     try: s+""
     except: raise TypeError, "s must be a string"
     pos = 0
@@ -28,4 +28,5 @@ def sentences(s):
 # Self test
 if __name__ == "__main__":
     # sentences
-    print sentences("First.  Second, still?  Third and Final!  Well, not really")
+    sents = sentences("First.  Second, still?  Third and Final!  Well, not really")
+    assert(len(sents) == 4)

@@ -1,21 +1,19 @@
-"""
-This file contains the default (English) substitutions for the
-PyAIML kernel.  These substitutions may be overridden by
-using the Kernel.loadSubs(filename) method.  The filename specified
-should refer to a Windows-style INI file with the following format:
+"""This file contains the default (English) substitutions for the
+PyAIML kernel.  These substitutions may be overridden by using the
+Kernel.loadSubs(filename) method.  The filename specified should refer
+to a Windows-style INI file with the following format:
 
     # lines that start with '#' are comments
 
-    # The 'gender' section contains the substitutions performed by
-    # the <gender> AIML tag, which swaps masculine and feminine
-    # pronouns.
+    # The 'gender' section contains the substitutions performed by the
+    # <gender> AIML tag, which swaps masculine and feminine pronouns.
     [gender]
     he = she
     she = he
     # and so on...
 
-    # The 'person' section contains the substitutions performed by
-    # the <person> AIML tag, which swaps 1st and 2nd person pronouns.
+    # The 'person' section contains the substitutions performed by the
+    # <person> AIML tag, which swaps 1st and 2nd person pronouns.
     [person]
     I = you
     you = I
@@ -29,9 +27,10 @@ should refer to a Windows-style INI file with the following format:
     # and so on...
 
     # the 'normal' section contains subtitutions run on every input
-    # string passed into Kernel.respond().  It's mainly used to correct
-    # common misspellings, and to convert contractions ("WHAT'S") into
-    # a format that will match an AIML pattern ("WHAT IS").
+    # string passed into Kernel.respond().  It's mainly used to
+    # correct common misspellings, and to convert contractions
+    # ("WHAT'S") into a format that will match an AIML pattern ("WHAT
+    # IS").
     [normal]
     what's = what is
 """
