@@ -1,5 +1,14 @@
+version 0.7:
+ - Further improved AIML parsing; missing or invalid XML attributes are now
+   detected at parse-time.  There's also a first stab at support for Forward
+   Compatibility Mode: if the "version" attribute of an AIML tag is not 1.0.1,
+   the parser is much more forgiving of unknown or missing XML tags and attributes.
+ - Added "support" for the 'gossip' tag.  The specific behavior of this tag is
+   totally undefined; currently, the PyAIML implementation treats it as a big
+   no-op.  Its contents are ignored, and it returns the empty string (but at least
+   it isn't flagged as a syntax error!) 
  - Oops; I've implemented 'person' as 'person2' and vice versa this whole time!
-   Swapped them; they should each behave correctly now.
+   Swapped them back; they should each behave correctly now.
  - A bit of code cleanup, with an emphasis on using proper XML/AIML terminology
    whenever possible.
  - Fixed some exception-masking in the 'condition' element processor, which could
