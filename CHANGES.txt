@@ -6,6 +6,9 @@ version 0.8:
    Kernel.getSessionData() method which gives the bot author access to the session
    data.  You can store this data however you wish.  Session data can be restored
    later by repeated calls to Kernel.setPredicate().
+ - Improved AIML parser error handling; instead of aborting the entire file, a
+   parse error now only ignores the current category and forges ahead.  To check for
+   parse errors, check the return value of AimlParser.getNumErrors() after parsing.
 
 version 0.7:
  - Further improved AIML parsing; missing or invalid XML attributes are now
