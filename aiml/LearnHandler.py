@@ -16,7 +16,8 @@ class LearnHandler(ContentHandler):
 			# any XML tags in the pattern.
 			self._inPattern = True
 			self._currentPattern = ""
-		elif name == "that" and not self._inTemplate:
+			self._currentThat = ""
+		elif name == "that" and not self._inTemplate and not self._inPattern:
 			# <that/> has a different meaning when it appears inside a
 			# template. Right now we're only interested in the <category>-level
 			# <that> pattern.
@@ -39,7 +40,7 @@ class LearnHandler(ContentHandler):
 			# so it can later be marshaled.
 			attrDict = {}
 			for k,v in attr.items():
-				attrDict[k] = v
+				attrDict[k.encode("Latin-1")] = v.encode("Latin-1")
 			self._atomStack.append([name.encode("Latin-1"),attrDict])
 		else:
 			pass # ignore all other elements
