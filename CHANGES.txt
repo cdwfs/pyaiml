@@ -1,6 +1,8 @@
 version 0.8.3:
  - Reworked the way AimlParser objects are created, to allow support for
    XML namespaces in a future version.
+ - First pass at Unicode-proofing the whole system, so that multi-lingual
+   AIML files can be processed.
 
 version 0.8.2:
  - Added protection against infinite AIML recursion.

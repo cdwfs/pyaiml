@@ -223,4 +223,10 @@ updating the tests in Kernel.py!
 
 <!-- version --><category><pattern>TEST VERSION</pattern><template>PyAIML is version <version/></template></category>
 
+<!-- unicode support -->
+<category>
+<pattern>早上好</pattern>
+<template>Hey, you speak Chinese! 早上好</template>
+</category>
+
 </aiml>

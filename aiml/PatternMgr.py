@@ -3,6 +3,7 @@
 # http://www.alicebot.org/documentation/matching.html
 
 import marshal
+import pprint
 import re
 import string
 import sys
@@ -19,18 +20,29 @@ class PatternMgr:
 	def __init__(self):
 		self._root = {}
 		self._templateCount = 0
-		self._botName = "Nameless"
-		self._convertRE = re.compile("[^A-Z0-9_* ]")
-		self._whitespaceTransTable = string.maketrans("\n\t", "  ")
+		self._botName = u"Nameless"
+		punctuation = "\"`~1@#$%^&*()-_=+[{]}\|;:',<.>/?"
+		self._puncStripRE = re.compile("[" + re.escape(punctuation) + "]")
+		self._whitespaceRE = re.compile("\s", re.LOCALE | re.UNICODE)
 
 	def setBotName(self, name):
 		"""Sets the name of the bot, used to match <bot name="name"> tags in
 patterns.  The name must be a single word!"""
 		# Collapse a multi-word name into a single word
-		self._botName = string.join(name.split())
+		self._botName = unicode(string.join(name.split()))
 
 	def dump(self):
 		pprint.pprint(self._root)
+
+	def upper(self, s):
+		"ASCII-only version of string.upper!"
+		ret = u""
+		for i in range(len(s)):
+			if u"a" <= s[i] <= u"z":
+				ret += unichr(ord(s[i])-32)
+			else:
+				ret += s[i]
+		return ret
 
 	def save(self, filename):
 		"Dumps the current patterns to a file.  To restore later, use restore()."
@@ -66,11 +78,11 @@ patterns.  The name must be a single word!"""
 		node = self._root
 		for word in string.split(pattern):
 			key = word
-			if key == "_":
+			if key == u"_":
 				key = self._UNDERSCORE
-			elif key == "*":
+			elif key == u"*":
 				key = self._STAR
-			elif key == "BOT_NAME":
+			elif key == u"BOT_NAME":
 				key = self._BOT_NAME
 			if not node.has_key(key):
 				node[key] = {}
@@ -83,9 +95,9 @@ patterns.  The name must be a single word!"""
 			node = node[self._THAT]
 			for word in string.split(that):
 				key = word
-				if key == "_":
+				if key == u"_":
 					key = self._UNDERSCORE
-				elif key == "*":
+				elif key == u"*":
 					key = self._STAR
 				if not node.has_key(key):
 					node[key] = {}
@@ -98,9 +110,9 @@ patterns.  The name must be a single word!"""
 			node = node[self._TOPIC]
 			for word in string.split(topic):
 				key = word
-				if key == "_":
+				if key == u"_":
 					key = self._UNDERSCORE
-				elif key == "*":
+				elif key == u"*":
 					key = self._STAR
 				if not node.has_key(key):
 					node[key] = {}
@@ -124,16 +136,15 @@ patterns.  The name must be a single word!"""
 			return None
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
-		input = string.upper(pattern)
-		input = re.sub(self._convertRE, "", input)
-		if that.strip() == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
-		thatInput = string.upper(that)
-		try: thatInput = thatInput.translate(self._whitespaceTransTable)
-		except TypeError: pass # translate doesn't work on Unicode strings
-		thatInput = re.sub(self._convertRE, "", thatInput)
-		if topic.strip() == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
-		topicInput = string.upper(topic)
-		topicInput = re.sub(self._convertRE, "", topicInput)
+		input = self.upper(pattern)
+		input = re.sub(self._puncStripRE, "", input)
+		if that.strip() == u"": that = u"ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
+		thatInput = self.upper(that)
+		thatInput = re.sub(self._whitespaceRE, " ", thatInput)
+		thatInput = re.sub(self._puncStripRE, "", thatInput)
+		if topic.strip() == u"": topic = u"ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
+		topicInput = self.upper(topic)
+		topicInput = re.sub(self._puncStripRE, "", topicInput)
 		
 		# Pass the input off to the recursive call
 		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)
@@ -149,16 +160,15 @@ The 'starType' parameter specifies which type of star to find.  Legal values are
 """
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
-		input = string.upper(pattern)
-		input = re.sub(self._convertRE, "", input)
-		if that.strip() == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
-		thatInput = string.upper(that)
-		try: thatInput = thatInput.translate(self._whitespaceTransTable)
-		except TypeError: pass # translate doesn't work on Unicode strings
-		thatInput = re.sub(self._convertRE, "", thatInput)
-		if topic.strip() == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
-		topicInput = string.upper(topic)
-		topicInput = re.sub(self._convertRE, "", topicInput)
+		input = self.upper(pattern)
+		input = re.sub(self._puncStripRE, "", input)
+		if that.strip() == u"": that = u"ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
+		thatInput = self.upper(that)
+		thatInput = re.sub(self._whitespaceRE, " ", thatInput)
+		thatInput = re.sub(self._puncStripRE, "", thatInput)
+		if topic.strip() == u"": topic = u"ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
+		topicInput = self.upper(topic)
+		topicInput = re.sub(self._puncStripRE, "", topicInput)
 
 		# Pass the input off to the recursive pattern-matcher
 		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)

@@ -933,6 +933,7 @@ if __name__ == "__main__":
     _testTag(k, 'topic', "test topic", ["We were discussing apples and oranges"]) 
     k.setPredicate("topic", "Soylent Green")
     _testTag(k, 'topicstar', 'test topicstar', ["Solyent Green is made of people!"])
+    _testTag(k, 'unicode support', u"\xd4\xe7\xc9\xcf\xba\xc3", [u"Hey, you speak Chinese! \xd4\xe7\xc9\xcf\xba\xc3"])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
 

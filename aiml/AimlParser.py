@@ -101,7 +101,7 @@ class AimlHandler(ContentHandler):
 				raise AimlParserError, "Unexpected <aiml> tag "+self._location()
 			self._state = self._STATE_InsideAiml
 			self._insideTopic = False
-			self._currentTopic = ""
+			self._currentTopic = u""
 			try: self._version = attr["version"]
 			except KeyError:
 				# This SHOULD be a syntax error, but so many AIML sets out there are missing
@@ -127,7 +127,7 @@ class AimlHandler(ContentHandler):
 			# if we're not already inside a topic.
 			if (self._state != self._STATE_InsideAiml) or self._insideTopic:
 				raise AimlParserError, "Unexpected <topic> tag", self._location()
-			try: self._currentTopic = attr['name'].encode(self._encoding)
+			try: self._currentTopic = unicode(attr['name'])
 			except KeyError:
 				raise AimlParserError, "Required \"name\" attribute missing in <topic> element "+self._location()
 			self._insideTopic = True
@@ -136,10 +136,10 @@ class AimlHandler(ContentHandler):
 			if self._state != self._STATE_InsideAiml:
 				raise AimlParserError, "Unexpected <category> tag "+self._location()
 			self._state = self._STATE_InsideCategory
-			self._currentPattern = ""
-			self._currentThat = ""
+			self._currentPattern = u""
+			self._currentThat = u""
 			# If we're not inside a topic, the topic is implicitly set to *
-			if not self._insideTopic: self._currentTopic = "*"
+			if not self._insideTopic: self._currentTopic = u"*"
 			self._elemStack = []
 		elif name == "pattern":
 			# <pattern> tags are only legal in the InsideCategory state
@@ -158,23 +158,23 @@ class AimlHandler(ContentHandler):
 				raise AimlParserError, "Unexpected <template> tag "+self._location()
 			# if no <that> element was specified, it is implicitly set to *
 			if self._state == self._STATE_AfterPattern:
-				self._currentThat = "*"
+				self._currentThat = u"*"
 			self._state = self._STATE_InsideTemplate
 			self._elemStack.append(['template',{}])
 		elif self._state == self._STATE_InsidePattern:
 			# Certain tags are allowed inside <pattern> elements.
-			if name == "bot" and attr.has_key("name") and attr["name"] == "name":
+			if name == "bot" and attr.has_key("name") and attr["name"] == u"name":
 				# Insert a special character string that the PatternMgr will
 				# replace with the bot's name.
-				self._currentPattern += " BOT_NAME "
+				self._currentPattern += u" BOT_NAME "
 			else:
 				raise AimlParserError, ("Unexpected <%s> tag " % name)+self._location()
 		elif self._state == self._STATE_InsideThat:
 			# Certain tags are allowed inside <that> elements.
-			if name == "bot" and attr.has_key("name") and attr["name"] == "name":
+			if name == "bot" and attr.has_key("name") and attr["name"] == u"name":
 				# Insert a special character string that the PatternMgr will
 				# replace with the bot's name.
-				self._currentThat += " BOT_NAME "
+				self._currentThat += u" BOT_NAME "
 			else:
 				raise AimlParserError, ("Unexpected <%s> tag " % name)+self._location()
 		elif self._state == self._STATE_InsideTemplate and self._validInfo.has_key(name):
@@ -184,7 +184,7 @@ class AimlHandler(ContentHandler):
 			attrDict = {}
 			for k,v in attr.items():
 				#attrDict[k[1].encode(self._encoding)] = v.encode(self._encoding)
-				attrDict[k.encode(self._encoding)] = v.encode(self._encoding)
+				attrDict[k.encode(self._encoding)] = unicode(v)
 			self._validateElemStart(name, attrDict, self._version)
 			# Push the current element onto the element stack.
 			self._elemStack.append([name.encode(self._encoding),attrDict])
@@ -224,7 +224,7 @@ class AimlHandler(ContentHandler):
 				self._skipCurrentCategory = True
 			
 	def _characters(self, ch):
-		text = ch.encode(self._encoding)
+		text = unicode(ch)
 		if self._state == self._STATE_InsidePattern:
 			self._currentPattern += text
 		elif self._state == self._STATE_InsideThat:
@@ -313,7 +313,7 @@ class AimlHandler(ContentHandler):
 			if self._state != self._STATE_InsideAiml or not self._insideTopic:
 				raise AimlParserError, "Unexpected </topic> tag "+self._location()
 			self._insideTopic = False
-			self._currentTopic = ""
+			self._currentTopic = u""
 		elif name == "category":
 			# </category> tags are only legal in the AfterTemplate state
 			if self._state != self._STATE_AfterTemplate:
