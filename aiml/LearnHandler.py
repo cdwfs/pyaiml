@@ -27,7 +27,7 @@ class LearnHandler(ContentHandler):
 		self._currentTopic   = ""
 		self._insideTopic = False
 		self._currentUnknown = "" # the name of the current unknown element
-		self._atomStack = []
+		self._elemStack = []
 		self._locator = Locator()
 		self.setDocumentLocator(self._locator)
 
@@ -79,7 +79,7 @@ class LearnHandler(ContentHandler):
 			self._currentThat = ""
 			# If we're not inside a topic, the topic is implicitly set to *
 			if not self._insideTopic: self._currentTopic = "*"
-			self._atomStack = []
+			self._elemStack = []
 		elif name == "pattern":
 			# <pattern> tags are only legal in the InsideCategory state
 			if self._state != self._STATE_InsideCategory:
@@ -99,7 +99,7 @@ class LearnHandler(ContentHandler):
 			if self._state == self._STATE_AfterPattern:
 				self._currentThat = "*"
 			self._state = self._STATE_InsideTemplate
-			self._atomStack.append(['template',{}])
+			self._elemStack.append(['template',{}])
 		elif self._state == self._STATE_InsidePattern:
 			# Certain tags are allowed inside <pattern> elements.
 			if name == "bot" and attr.has_key("name") and attr["name"] == "name":
@@ -118,13 +118,13 @@ class LearnHandler(ContentHandler):
 				raise AimlParserError, ("Unexpected <%s> tag " % name)+self._location()
 		elif self._state == self._STATE_InsideTemplate:
 			# Starting a new element inside the current pattern.
-			# Push the current element onto the atom stack.  First
+			# Push the current element onto the element stack.  First
 			# we need to convert 'attr' into a native Python dictionary,
 			# so it can later be marshaled.
 			attrDict = {}
 			for k,v in attr.items():
 				attrDict[k.encode(self._encoding)] = v.encode(self._encoding)
-			self._atomStack.append([name.encode(self._encoding),attrDict])
+			self._elemStack.append([name.encode(self._encoding),attrDict])
 		else:
 			# we're now inside an unknown element.  Ignore everything until it ends.
 			if self._version == "1.0.1":
@@ -144,16 +144,16 @@ class LearnHandler(ContentHandler):
 		elif self._state == self._STATE_InsideThat:
 			self._currentThat += text
 		elif self._state == self._STATE_InsideTemplate:
-			# Add a new text atom to the atom at the top of the atom stack. If
-			# there's already a text atom there, simply append the new
-			# characters to its contents.
-			try: textAtomOnStack = (self._atomStack[-1][-1][0] == "text")
-			except IndexError: textAtomOnStack = False
-			except KeyError: textAtomOnStack = False
-			if textAtomOnStack:
-				self._atomStack[-1][-1][2] += text
+			# Add a new text element to the element at the top of the element
+			# stack. If there's already a text element there, simply append the
+			# new characters to its contents.
+			try: textElemOnStack = (self._elemStack[-1][-1][0] == "text")
+			except IndexError: textElemOnStack = False
+			except KeyError: textElemOnStack = False
+			if textElemOnStack:
+				self._elemStack[-1][-1][2] += text
 			else:
-				self._atomStack[-1].append(["text", {}, text])
+				self._elemStack[-1].append(["text", {}, text])
 		else:
 			# all other text is ignored
 			pass
@@ -184,9 +184,9 @@ class LearnHandler(ContentHandler):
 				raise AimlParserError, "Unexpected </category> tag "+self._location()
 			self._state = self._STATE_InsideAiml
 			# End the current category.  Store the current pattern/that/topic and
-			# atom in the categories dictionary.
+			# element in the categories dictionary.
 			key = (self._currentPattern.strip(), self._currentThat.strip(),self._currentTopic.strip())
-			self.categories[key] = self._atomStack[-1]
+			self.categories[key] = self._elemStack[-1]
 		elif name == "pattern":
 			# </pattern> tags are only legal in the InsidePattern state
 			if self._state != self._STATE_InsidePattern:
@@ -211,9 +211,9 @@ class LearnHandler(ContentHandler):
 				raise AimlParserError, ("Unexpected </%s> tag " % name)+self._location()
 		elif self._state == self._STATE_InsideTemplate:
 			# End of an element inside the current template.  Append the
-			# atom at the top of the stack onto the one beneath it.
-			atom = self._atomStack.pop()
-			self._atomStack[-1].append(atom)
+			# element at the top of the stack onto the one beneath it.
+			elem = self._elemStack.pop()
+			self._elemStack[-1].append(elem)
 		else:
 			# Unexpected closing tag
 			raise AimlParserError, ("Unexpected </%s> tag " % name)+self._location()
