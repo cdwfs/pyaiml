@@ -66,7 +66,7 @@ class LearnHandler(ContentHandler):
 			# if we're not already inside a topic.
 			if (self._state != self._STATE_InsideAiml) or self._insideTopic:
 				raise AimlParserError, "Unexpected <topic> tag", self._location()
-			try: self._currentTopic = attr['name']
+			try: self._currentTopic = attr['name'].encode(self._encoding)
 			except AttributeError:
 				raise AimlParserError, "Missing 'name' attribute in <topic> tag "+self._location()
 			self._insideTopic = True
@@ -183,9 +183,9 @@ class LearnHandler(ContentHandler):
 			if self._state != self._STATE_AfterTemplate:
 				raise AimlParserError, "Unexpected </category> tag "+self._location()
 			self._state = self._STATE_InsideAiml
-			# End the current category.  Store the current pattern/that and
+			# End the current category.  Store the current pattern/that/topic and
 			# atom in the categories dictionary.
-			key = (self._currentPattern.strip(), self._currentThat.strip())
+			key = (self._currentPattern.strip(), self._currentThat.strip(),self._currentTopic.strip())
 			self.categories[key] = self._atomStack[-1]
 		elif name == "pattern":
 			# </pattern> tags are only legal in the InsidePattern state
