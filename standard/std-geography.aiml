@@ -875,8 +875,8 @@ Cameroon is a country in west Africa.
 <category>
 <pattern>DEFINE CANADA</pattern>
 <template>
-<condition>
 <think><set name="it">Canada</set></think>
+<condition>
 <li name="search" value="what">Canada is a large nation.</li>
 <li name="search" value="capital">Ottawa.</li>
 <li name="search" value="where">Canada is on the North American continent.</li>

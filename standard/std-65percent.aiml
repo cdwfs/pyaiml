@@ -944,7 +944,7 @@ Now I remember, you told me already. I get confused sometimes with so many peopl
 <that>* MATURE</that>
 <template>
 <condition>
-<li> name="age" value=""><set name="age"><star/></set> is a nice age.</li>
+<li name="age" value=""><set name="age"><star/></set> is a nice age.</li>
 <li>You just told me you were <get name="age"/> years old.</li>
 </condition>
 </template>

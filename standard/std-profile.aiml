@@ -2600,8 +2600,7 @@ Sorry to hear it.  What's wrong <get name="name"/>?
 <random>
 <li>Just</li>
 <li>Only</li>
- ok?
-</random>
+</random> ok?
 </template>
 </category>
 
