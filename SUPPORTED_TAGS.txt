@@ -1,6 +1,6 @@
 This document describes the current state of PyAIML's compliance
 to the AIML 1.0.1 standard.  The full AIML reference manual can be
-found online at http://www.alicebot.org/documentation/aiml-reference.html
+found online at http://alicebot.org/TR/2001/WD-aiml.
 
 The following tags are currently supported:
 
@@ -39,8 +39,8 @@ Support for the following tags should be implemented in the next version:
 
 The following tags are not supported:
 
-	<gossip>
-	<if>/<else>
+	<gossip> (see notes)
+	<if> / <else> (see notes)
 	<javascript> (see notes)
 	<secure> (see notes)
 
@@ -52,6 +52,16 @@ NOTES ON SPECIFIC TAGS:
 To set the bot's name, use Kernel.setBotName("NewName").  Note that the
 name *MUST* be a single word!  Use Kernel.getBotName() to query the bot's
 name in your code.
+
+<gossip>
+The AIML 1.0.1 specification lets engine authors implement the the behavior
+of the <gossip> tag however they wish.  I haven't yet decided what I'd like
+to do with it, so right now it doesn't do anything at all.
+
+<if> / <else>
+These elements appear to have been dropped between AIML 1.0 and AIML 1.0.1.
+They may someday be added as a part of an AIML 1.0 backwards-compatibility
+mode, but in the meantime, use <condition> instead.
 
 <javascript>
 Support for the JavaScript tag is not anticipated; one of the design
