@@ -48,6 +48,7 @@ class Kernel:
             "person":       self._processPerson,
             "person2":      self._processPerson2,
             "random":       self._processRandom,
+            "text":         self._processText,
             "sentence":     self._processSentence,
             "set":          self._processSet,
             "size":         self._processSize,
@@ -532,6 +533,14 @@ this format).  Each section of the file is loaded into its own substituter."""
         for a in atom[2:]:
             response += self._processAtom(a, sessionID)
         return response
+
+    # text
+    def _processText(self,atom, sessionID):
+        # Text atoms are simple wrappers around raw text strings. They
+        # have no attributes, and cannot contain other atoms in their
+        # contents -- instead, they contain a single text string, which
+        # is returned immediately.
+        return atom[2]
 
     # think
     def _processThink(self,atom, sessionID):

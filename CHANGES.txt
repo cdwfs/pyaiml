@@ -1,3 +1,7 @@
+version 0.3
+ - Cleaned up AIML processing code to remove some unnecessary
+   special-cases in the interpretation algorithm.
+
 version 0.2
  - 50% speedup in Kernel.loadBrain() and Kernel.saveBrain().
  - The optional 'learnFiles' and 'commands' arguments to

@@ -51,8 +51,8 @@ class LearnHandler(ContentHandler):
 		elif self._inThat:
 			self._currentThat += ch.encode("Latin-1")
 		elif self._inTemplate:
-			# Add a new text element to the atom at the top of the atom stack.
-			self._atomStack[-1].append(ch.encode("Latin-1"))
+			# Add a new text atom to the atom at the top of the atom stack.
+			self._atomStack[-1].append(["text", {}, ch.encode("Latin-1")])
 		else:
 			pass # ignore all other characters
 
