@@ -34,16 +34,6 @@ patterns.  The name must be a single word!"""
 	def dump(self):
 		pprint.pprint(self._root)
 
-	def upper(self, s):
-		"ASCII-only version of string.upper!"
-		ret = u""
-		for i in range(len(s)):
-			if u"a" <= s[i] <= u"z":
-				ret += unichr(ord(s[i])-32)
-			else:
-				ret += s[i]
-		return ret
-
 	def save(self, filename):
 		"Dumps the current patterns to a file.  To restore later, use restore()."
 		try:
@@ -136,14 +126,14 @@ patterns.  The name must be a single word!"""
 			return None
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
-		input = self.upper(pattern)
+		input = string.upper(pattern)
 		input = re.sub(self._puncStripRE, "", input)
 		if that.strip() == u"": that = u"ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
-		thatInput = self.upper(that)
+		thatInput = string.upper(that)
 		thatInput = re.sub(self._whitespaceRE, " ", thatInput)
 		thatInput = re.sub(self._puncStripRE, "", thatInput)
 		if topic.strip() == u"": topic = u"ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
-		topicInput = self.upper(topic)
+		topicInput = string.upper(topic)
 		topicInput = re.sub(self._puncStripRE, "", topicInput)
 		
 		# Pass the input off to the recursive call
@@ -160,14 +150,14 @@ The 'starType' parameter specifies which type of star to find.  Legal values are
 """
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
-		input = self.upper(pattern)
+		input = string.upper(pattern)
 		input = re.sub(self._puncStripRE, "", input)
 		if that.strip() == u"": that = u"ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
-		thatInput = self.upper(that)
+		thatInput = string.upper(that)
 		thatInput = re.sub(self._whitespaceRE, " ", thatInput)
 		thatInput = re.sub(self._puncStripRE, "", thatInput)
 		if topic.strip() == u"": topic = u"ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
-		topicInput = self.upper(topic)
+		topicInput = string.upper(topic)
 		topicInput = re.sub(self._puncStripRE, "", topicInput)
 
 		# Pass the input off to the recursive pattern-matcher

@@ -35,7 +35,7 @@ class Kernel:
         self._version = "PyAIML 0.8.4"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
-        self._textEncoding = "UTF-8"
+        self._textEncoding = "utf_8"
 
         # set up the sessions        
         self._sessions = {}
@@ -314,7 +314,8 @@ session dictionaries."""
         inputStack = self.getPredicate(self._inputStack, sessionID)
         if len(inputStack) > self._maxRecursionDepth:
             if self._verboseMode:
-                err = "WARNING: maximum recursion depth exceeded (input='%s')" % input
+                err = "WARNING: maximum recursion depth exceeded (input='%s')" % input.encode(self._textEncoding)
+                sys.stderr.write(err)
             return ""
 
         # push the input onto the input stack
@@ -341,7 +342,7 @@ session dictionaries."""
         elem = self._brain.match(subbedInput, subbedThat, subbedTopic)
         if elem is None:
             if self._verboseMode:
-                err = "WARNING: No match found for input: %s\n" % input
+                err = "WARNING: No match found for input: %s\n" % input.encode(self._textEncoding)
                 sys.stderr.write(err)
         else:
             # Process the element into a response string.
@@ -369,7 +370,7 @@ session dictionaries."""
             # Oops -- there's no handler function for this element
             # type!
             if self._verboseMode:
-                err = "WARNING: No handler found for <%s> element\n" % elem[0]
+                err = "WARNING: No handler found for <%s> element\n" % elem[0].encode(self._textEncoding)
                 sys.stderr.write(err)
             return ""
         return handlerFunc(elem, sessionID)
@@ -722,7 +723,7 @@ session dictionaries."""
             out = os.popen(command)            
         except RuntimeError, msg:
             if self._verboseMode:
-                err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg
+                err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg.encode(self._textEncoding)
                 sys.stderr.write(err)
             return "There was an error while computing my response.  Please inform my botmaster."
         for line in out:
@@ -852,7 +853,7 @@ def _testTag(kern, tag, input, outputList):
         _numPassed += 1
         return True
     else:
-        print "FAILED (response: '%s')" % response
+        print "FAILED (response: '%s')" % response.encode(kern._textEncoding)
         return False
 
 if __name__ == "__main__":
@@ -926,7 +927,7 @@ if __name__ == "__main__":
     _testTag(k, 'topicstar test #1', 'test topicstar', ["Solyent Green is made of people!"])
     k.setPredicate("topic", "Soylent Ham and Cheese")
     _testTag(k, 'topicstar test #2', 'test topicstar multiple', ["Both Soylents Ham and Cheese are made of people!"])
-    _testTag(k, 'unicode support', u"\xd4\xe7\xc9\xcf\xba\xc3", [u"Hey, you speak Chinese! \xd4\xe7\xc9\xcf\xba\xc3"])
+    _testTag(k, 'unicode support', u"郧上好", [u"Hey, you speak Chinese! 郧上好"])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
 
