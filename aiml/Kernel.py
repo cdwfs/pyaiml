@@ -32,9 +32,10 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.8.2"
+        self._version = "PyAIML 0.8.3"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
+        self._textEncoding = "UTF-8"
 
         # set up the sessions        
         self._sessions = {}
@@ -184,6 +185,10 @@ class Kernel:
         if name == "name":
             self._brain.setBotName(self.getBotPredicate("name"))
 
+    def setTextEncoding(self, encoding):
+        "Sets the text encoding used when loading AIML files (Latin-1, UTF-8, etc.)"
+        self._textEncoding = encoding
+
     def loadSubs(self, filename):
         """Load a substitutions file.  The file must be in the Windows-style INI
 format (see the standard ConfigParser module docs for information on
@@ -238,7 +243,7 @@ session dictionaries."""
             if self._verboseMode: print "Loading %s..." % f,
             start = time.clock()
             # Load and parse the AIML file.
-            handler = AimlParser()
+            handler = AimlParser(self._textEncoding)
             try: xml.sax.parse(f, handler)
             except xml.sax.SAXParseException, msg:
                 err = "\nFATAL PARSE ERROR in file %s:\n%s\n" % (f,msg)

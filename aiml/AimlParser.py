@@ -16,7 +16,7 @@ class AimlParser(ContentHandler):
 	_STATE_InsideTemplate = 7
 	_STATE_AfterTemplate  = 8
 	
-	def __init__(self, encoding = "Latin-1"):
+	def __init__(self, encoding = "UTF-8"):
 		self.categories = {}
 		self._encoding = encoding
 		self._state = self._STATE_OutsideAiml
