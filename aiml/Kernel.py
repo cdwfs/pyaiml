@@ -3,7 +3,7 @@ This file contains the public interface to the aiml module.
 """
 import DefaultSubs
 import Utils
-from LearnHandler import LearnHandler
+from AimlParser import AimlParser, AimlParserError
 from PatternMgr import PatternMgr
 from WordSub import WordSub
 
@@ -14,6 +14,7 @@ import random
 import re
 import shelve
 import string
+import sys
 import time
 import threading
 import xml.sax
@@ -59,8 +60,10 @@ class Kernel:
             "formal":       self._processFormal,
             "gender":       self._processGender,
             "get":          self._processGet,
+            "gossip":       self._processGossip,
             "id":           self._processId,
             "input":        self._processInput,
+            "javascript":   self._processJavascript,
             "learn":        self._processLearn,
             "li":           self._processLi,
             "lowercase":    self._processLowercase,
@@ -269,14 +272,19 @@ session data in memory, so it should be called shortly after startup."""
         for f in glob.glob(filename):
             if self._verboseMode: print "Loading %s..." % f,
             start = time.clock()
-            # Load and parse the AIML file
-            handler = LearnHandler()
-            xml.sax.parse(f, handler)
-            
+            # Load and parse the AIML file.
+            handler = AimlParser()
+            try: xml.sax.parse(f, handler)
+            except AimlParserError, msg:
+                print "\nPARSE ERROR in file %s:\n%s" % (f,msg)
+                continue
+            except xml.sax.SAXParseException, msg:
+                print "\nPARSE ERROR in file %s:\n%s" % (f,msg)
+                continue
             # store the pattern/template pairs in the PatternMgr.
             for key,tem in handler.categories.items():
                 self._brain.add(key,tem)
-
+            # Parsing was successful.
             if self._verboseMode:
                 print "done (%.2f seconds)" % (time.clock() - start)
 
@@ -387,11 +395,7 @@ session data in memory, so it should be called shortly after startup."""
             # Oops -- there's no handler function for this element
             # type!
             if self._verboseMode: print "No handler found for <%s> element" % elem[0]
-            # Process the unknown element's contents and return them unaltered.
-            response = ""
-            for e in elem[2:]:
-                response += self._processElement(e, sessionID)
-            return response
+            return ""
         return handlerFunc(elem, sessionID)
 
 
@@ -405,11 +409,8 @@ session data in memory, so it should be called shortly after startup."""
         # read-only "bot predicates".  The values of these predicates
         # cannot be set using AIML; they must be initialized with
         # Kernel.setBotPredicate().
-        try:
-            attrName = elem[1]['name']
-            return self.getBotPredicate(attrName)
-        except KeyError:
-            return ""
+        attrName = elem[1]['name']
+        return self.getBotPredicate(attrName)
         
     # condition
     def _processCondition(self, elem, sessionID):
@@ -417,25 +418,18 @@ session data in memory, so it should be called shortly after startup."""
         # attributes, and each handles their contents differently.
         attr = None
         response = ""
-        try: attr = elem[1]
-        except:
-            if self._verboseMode: print "Missing attributes dict in _processCondition"
-            return response
+        attr = elem[1]
         
         # The simplest case is when the condition tag has both a
         # 'name' and a 'value' attribute.  In this case, if the
         # predicate 'name' has the value 'value', then the contents of
         # the element are processed and returned.
         if attr.has_key('name') and attr.has_key('value'):
-            try:
-                val = self.getPredicate(attr['name'], sessionID)
-                if val == attr['value']:
-                    for e in elem[2:]:
-                        response += self._processElement(e,sessionID)
-                    return response
-            except:
-                if self._verboseMode: print "Something amiss in condition/name/value"
-                raise
+            val = self.getPredicate(attr['name'], sessionID)
+            if val == attr['value']:
+                for e in elem[2:]:
+                    response += self._processElement(e,sessionID)
+                return response
         
         # If the condition element has only a 'name' attribute, then its
         # contents are a series of <li> elements, each of which has a
@@ -458,6 +452,9 @@ session data in memory, so it should be called shortly after startup."""
                 for e in elem[2:]:
                     if e[0] == 'li':
                         listitems.append(e)
+                # if listitems is empty, return the empty string
+                if len(listitems) == 0:
+                    return ""
                 # iterate through the list looking for a condition that
                 # matches.
                 foundMatch = False
@@ -534,11 +531,15 @@ session data in memory, so it should be called shortly after startup."""
         # Get elements return the value of a predicate from the specified
         # session.  The predicate to get is specified by the 'name'
         # attribute of the element.  Any contents of the element are ignored.
-        try:
-            return self.getPredicate(elem[1]['name'], sessionID)
-        except:
-            # no name attribute, no such predicate, or no such session
-            return ""
+        return self.getPredicate(elem[1]['name'], sessionID)
+
+    # gossip
+    def _processGossip(self, elem, sessionID):
+        # Gossip elements are used to capture and store user input in
+        # an implementation-defined manner.  I haven't decided how to
+        # define my implementation, so right now gossip behaves
+        # identically to <think>
+        return self._processThink(elem, sessionID)
 
     # id
     def _processId(self, elem, sessionID):
@@ -562,6 +563,16 @@ session data in memory, so it should be called shortly after startup."""
             if self._verboseMode: print "No such index", index, "while processing <input> element."
             return ""
 
+    # javascript
+    def _processJavascript(self, elem, sessionID):
+        # Javascript elements process their contents, and then run the
+        # results through a server-side Javascript interpreter to compute
+        # the final response.  Implementations are not required to provide
+        # an actual Javascript interpreter, and right now PyAIML doesn't;
+        # <javascript> elements behave identically to <think> elements
+        # (their contents are processed, and the empty string is returned).
+        return self._processThink(elem, sessionID)
+    
     # learn
     def _processLearn(self, elem, sessionID):
         # Learn elements contain one piece of data: an element which
@@ -648,7 +659,7 @@ session data in memory, so it should be called shortly after startup."""
             words[0] = string.capitalize(words[0])
             response = string.join(words)
             return response
-        except IndexError: # reponse was empty
+        except IndexError: # response was empty
             return ""
 
     # set
@@ -660,10 +671,7 @@ session data in memory, so it should be called shortly after startup."""
         value = ""
         for e in elem[2:]:
             value += self._processElement(e, sessionID)
-        try: self.setPredicate(elem[1]['name'], value, sessionID)
-        except KeyError:
-            if self._verboseMode: print "Missing 'name' attribute in <set> tag"
-            
+        self.setPredicate(elem[1]['name'], value, sessionID)    
         return value
 
     # size
@@ -696,7 +704,7 @@ session data in memory, so it should be called shortly after startup."""
         # <star/> tag in the template would evaluate to "Tom Smith".
         # There is an optional "index" attribute, which specifies which
         # star to expand.  However, since AIML patterns are only allowed
-        # to have one * each, only an index of 1 really makes sense.
+        # to have one * each, only an index of 1 currently makes sense.
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
@@ -782,9 +790,10 @@ session data in memory, so it should be called shortly after startup."""
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
         index = 1
         try:
-            # According to the AIML spec, the index attribute contains two
-            # values, 'nx,ny'.  Only the first one seems to be relevant
-            # though.
+            # According to the AIML spec, the optional index attribute
+            # can either have the form "x" or "x,y". x refers to how
+            # far back in the output history to go.  y refers to which
+            # sentence of the specified response to return.
             index = int(elem[1]['index'].split(',')[0])
         except:
             pass
@@ -920,8 +929,10 @@ if __name__ == "__main__":
     _testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
     _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
     _testTag(k, 'get/set', 'test get and set', ["I like cheese.  My favorite food is cheese"])
+    _testTag(k, 'gossip', 'test gossip', ["Gossip is not yet implemented"])
     _testTag(k, 'id', 'test id', ["Your id is _global"])
     _testTag(k, 'input', 'test input', ['You just said: test input'])
+    _testTag(k, 'javascript', 'test javascript', ["Javascript is not yet implemented"])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
     _testTag(k, 'person', 'test person', ['HE think i knows that my actions threaten him and his.'])
     _testTag(k, 'person2', 'test person2', ['YOU think me know that my actions threaten you and yours.'])
@@ -951,7 +962,7 @@ if __name__ == "__main__":
     # Report test results
     print "--------------------"
     if _numTests == _numPassed:
-        print "All tests passed!"
+        print "%d of %d tests passed!" % (_numPassed, _numTests)
     else:
         print "%d of %d tests passed (see above for detailed errors)" % (_numPassed, _numTests)
 
