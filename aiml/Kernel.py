@@ -705,10 +705,16 @@ session dictionaries."""
         #executable = os.path.normpath(executable)
         #command = executable + " " + args
         command = os.path.normpath(command)
-        
+
         # execute the command.
         response = ""
-        out = os.popen(command)
+        try:
+            out = os.popen(command)            
+        except RuntimeError, msg:
+            if self._verboseMode:
+                err = "WARNING: RuntimeError while processing \"system\" element:\n%s" % msg
+                sys.stderr.write(err)
+            return "There was an error while computing my response.  Please inform my botmaster."
         for line in out:
             response += line + "\n"
         response = string.join(response.splitlines()).strip()

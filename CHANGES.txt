@@ -2,6 +2,8 @@ version 0.8.1:
  - "system" elements now attempt to intelligently convert between UNIX-style
    and Windows-style pathnames as appropriate.  For cross-platform compatibility,
    all AIML files should use UNIX-style paths inside their "system" elements.
+ - Fixed crashes under Windows9X when a "system" element is executed when
+   w9xpopen.exe is unavailable.
 
 version 0.8:
  - Removed support for non-standard "mode" attribute in "system" elements.
