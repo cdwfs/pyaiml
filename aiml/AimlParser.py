@@ -28,6 +28,13 @@ class AimlParser(ContentHandler):
 		self._insideTopic = False
 		self._currentUnknown = "" # the name of the current unknown element
 
+		# This is set to true when a parse error occurs in a category.
+		self._skipCurrentCategory = False
+
+		# Counts the number of parse errors in a particular AIML document.
+		# query with getNumErrors().  If 0, the document is AIML-compliant.
+		self._numParseErrors = 0
+
 		# TODO: select the proper validInfo table based on the version number.
 		self._validInfo = self._validationInfo101
 
@@ -42,6 +49,10 @@ class AimlParser(ContentHandler):
 		self._locator = Locator()
 		self.setDocumentLocator(self._locator)
 
+	def getNumErrors(self):
+		"Returns the number of errors found while parsing the current document."
+		return self._numParseErrors
+
 	def _location(self):
 		"Returns a string describing the current location in the source file."
 		line = self._locator.getLineNumber()
@@ -49,10 +60,29 @@ class AimlParser(ContentHandler):
 		return "(line %d, column %d)" % (line, column)
 
 	def startElement(self, name, attr):
-		# If we're inside an unknown element, ignore everything until we're out again
+		# Wrapper around _startElement, which catches errors in _startElement()
+		# and keeps going.
+		
+		# If we're inside an unknown element, ignore everything until we're
+		# out again.
 		if self._currentUnknown != "":
 			return
-		
+		# If we're skipping the current category, ignore everything until
+		# it's finished.
+		if self._skipCurrentCategory:
+			return
+
+		# process this start-element.
+		try: self._startElement(name, attr)
+		except AimlParserError, msg:
+			# Print the error message
+			print "PARSE ERROR:", msg
+			self._numParseErrors += 1 # increment error count
+			# In case of a parse error, if we're inside a category, skip it.
+			if self._state >= self._STATE_InsideCategory:
+				self._skipCurrentCategory = True
+			
+	def _startElement(self, name, attr):
 		if name == "aiml":
 			# <aiml> tags are only legal in the OutsideAiml state
 			if self._state != self._STATE_OutsideAiml:
@@ -86,8 +116,8 @@ class AimlParser(ContentHandler):
 			if (self._state != self._STATE_InsideAiml) or self._insideTopic:
 				raise AimlParserError, "Unexpected <topic> tag", self._location()
 			try: self._currentTopic = attr['name'].encode(self._encoding)
-			except AttributeError:
-				raise AimlParserError, "Missing 'name' attribute in <topic> tag "+self._location()
+			except KeyError:
+				raise AimlParserError, "Required \"name\" attribute missing in <topic> element "+self._location()
 			self._insideTopic = True
 		elif name == "category":
 			# <category> tags are only legal in the InsideAiml state
@@ -160,12 +190,27 @@ class AimlParser(ContentHandler):
 				raise AimlParserError, ("Unexpected <%s> tag " % name)+self._location()
 
 	def characters(self, ch):
+		# Wrapper around _characters which catches errors in _characters()
+		# and keeps going.
 		if self._state == self._STATE_OutsideAiml:
 			# If we're outside of an AIML element, we ignore all text
 			return
-		elif self._currentUnknown != "":
+		if self._currentUnknown != "":
 			# If we're inside an unknown element, ignore all text
 			return
+		if self._skipCurrentCategory:
+			# If we're skipping the current category, ignore all text.
+			return
+		try: self._characters(ch)
+		except AimlParserError, msg:
+			# Print the message
+			print "PARSE ERROR:", msg
+			self._numParseErrors += 1 # increment error count
+			# In case of a parse error, if we're inside a category, skip it.
+			if self._state >= self._STATE_InsideCategory:
+				self._skipCurrentCategory = True
+			
+	def _characters(self, ch):
 		text = ch.encode(self._encoding)
 		if self._state == self._STATE_InsidePattern:
 			self._currentPattern += text
@@ -211,6 +256,8 @@ class AimlParser(ContentHandler):
 			pass
 		
 	def endElement(self, name):
+		# Wrapper around _endElement which catches errors in _characters()
+		# and keeps going.
 		if self._state == self._STATE_OutsideAiml:
 			# If we're outside of an AIML element, ignore all tags
 			return
@@ -219,9 +266,26 @@ class AimlParser(ContentHandler):
 			# stop ignoring everything.
 			if name == self._currentUnknown:
 				self._currentUnknown = ""
-			else:
-				return
-		elif name == "aiml":
+			return
+		if self._skipCurrentCategory:
+			# If we're skipping the current category, see if it's ending. We
+			# stop on ANY </category> tag, since we're not keeping track of
+			# state in ignore-mode.
+			if name == "category":
+				self._skipCurrentCategory = False
+				self._state = self._STATE_InsideAiml
+			return
+		try: self._endElement(name)
+		except AimlParserError, msg:
+			# Print the message
+			print "PARSE ERROR:", msg
+			self._numParseErrors += 1 # increment error count
+			# In case of a parse error, if we're inside a category, skip it.
+			if self._state >= self._STATE_InsideCategory:
+				self._skipCurrentCategory = True
+
+	def _endElement(self, name):
+		if name == "aiml":
 			# </aiml> tags are only legal in the InsideAiml state
 			if self._state != self._STATE_InsideAiml:
 				raise AimlParserError, "Unexpected </aiml> tag "+self._location()
