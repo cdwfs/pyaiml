@@ -579,7 +579,7 @@ def _testTag(kern, tag, input, outputList):
 if __name__ == "__main__":
     # Run some self-tests
     k = Kernel()
-    k.bootstrap(learnFiles=["self-test.aiml"])
+    k.bootstrap(learnFiles="self-test.aiml")
 
     k.setPredicate('gender', 'male')
     _testTag(k, 'condition test #1', 'test condition name value', ['You are handsome'])
