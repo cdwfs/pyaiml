@@ -19,7 +19,9 @@ The following tags are currently supported:
 <sentence>
 <set>
 <size>
+<sr>
 <srai>
+<star> (see notes)
 <system> (see notes)
 <that> (both inside patterns and inside categories)
 <think>
@@ -28,7 +30,9 @@ The following tags are currently supported:
 
 Support for the following tags should be implemented in the next version:
 
-<star>
+<bot name="name">
+<secure>
+<thatstar>
 
 The following tags are not supported:
 
@@ -36,8 +40,6 @@ The following tags are not supported:
 <id>
 <if>/<else>
 <javascript> (see notes)
-<sr>
-<thatstar>
 <topic>
 <topicstar>
 
@@ -54,6 +56,13 @@ to simulate the effects of the <javascript> tag (i.e. dynamically-
 generated tag contents) using the <system mode="sync"> tag.  This
 solution has the added advantage of allowing *any* programming
 language to be used, not just JavaScript.
+
+<star>
+The star tag takes an optional "index" attribute, specifying which
+star in the pattern to expand and return.  However, the AIML reference
+seems to specify that there can only be one * in a given pattern,
+and PyAIML adheres to this restriction.  Therefore, index values other
+than 1 are meaningless (and ignored).
 
 <system>
 PyAIML supports a non-standard "mode" attribute in <system> tags.
