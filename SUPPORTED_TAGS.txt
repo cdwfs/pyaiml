@@ -62,6 +62,10 @@ to simulate the effects of the <javascript> tag (i.e. dynamically-
 generated tag contents) using the <system mode="sync"> tag.  This
 solution has the added advantage of allowing *any* programming
 language to be used, not just JavaScript.
+UPDATE: The python-spidermonkey project provides a bridge between Python
+and the open-source SpiderMonkey JavaScript library.  I am currently
+investigating the possibility of adding support for the <javascript>
+tag ON A PURELY OPTIONAL BASIS.
 
 <secure>
 Some AIML implementations support a non-standard <secure> tag, intended to
