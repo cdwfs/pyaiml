@@ -55,7 +55,7 @@ updating the tests in Kernel.py!
 <!-- get/set -->
 <category>
 <pattern>TEST GET AND SET</pattern>
-<template>My favorite <set name="food">cheese</set>food is <get name="food"/></template>
+<template>I like <set name="food">cheese</set>.  My favorite food is <get name="food"/></template>
 </category>
 
 <!-- input -->

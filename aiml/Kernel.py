@@ -537,16 +537,15 @@ this format).  Each section of the file is loaded into its own substituter."""
         # Set atoms processes its contents and assigns the results to
         # a predicate in the specified session.  The predicate to set
         # is specified by the required 'name' attribute of the atom.
+        # The contents of the atom are also returned.
         value = ""
         for a in atom[2:]:
             value += self._processAtom(a, sessionID)
-
-        try:
-            self.setPredicate(atom[1]['name'], value, sessionID)
-        except:
-            # no name attribute, or no such session
-            pass
-        return ""
+        try: self.setPredicate(atom[1]['name'], value, sessionID)
+        except KeyError:
+            if self._verboseMode: print "Missing 'name' attribute in <set> tag"
+            
+        return value
 
     # size
     def _processSize(self,atom, sessionID):
@@ -749,7 +748,7 @@ if __name__ == "__main__":
     
     _testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
     _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
-    _testTag(k, 'get/set', 'test get and set', ["My favorite food is cheese"])
+    _testTag(k, 'get/set', 'test get and set', ["I like cheese.  My favorite food is cheese"])
     _testTag(k, 'input', 'test input', ['You just said: test input'])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
     _testTag(k, 'person', 'test person', ['YOU think me know that my actions threaten you and yours.'])
