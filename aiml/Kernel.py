@@ -32,7 +32,7 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.9"
+        self._version = "PyAIML 0.8.2"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
 
