@@ -3,7 +3,7 @@ This file contains the public interface to the aiml module.
 """
 import DefaultSubs
 import Utils
-from AimlParser import AimlParser, AimlParserError
+from AimlParser import AimlParser
 from PatternMgr import PatternMgr
 from WordSub import WordSub
 
@@ -248,11 +248,8 @@ session dictionaries."""
             # Load and parse the AIML file.
             handler = AimlParser()
             try: xml.sax.parse(f, handler)
-            except AimlParserError, msg:
-                print "\nPARSE ERROR in file %s:\n%s" % (f,msg)
-                continue
             except xml.sax.SAXParseException, msg:
-                print "\nPARSE ERROR in file %s:\n%s" % (f,msg)
+                print "\nFATAL PARSE ERROR in file %s:\n%s" % (f,msg)
                 continue
             # store the pattern/template pairs in the PatternMgr.
             for key,tem in handler.categories.items():

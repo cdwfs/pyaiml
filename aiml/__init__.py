@@ -5,9 +5,7 @@ from Kernel import Kernel
 
 # AimlParser is a subclass of xml.sax.handler.ContentHandler, suitable
 # for passing as an argument to xml.sax.parse() and friends.
-# AimlParserError is the exception raised by the AimlParser class
-# when it finds an error.
-# These classes are only useful for parsing (NOT interpreting) raw AIML
+# This class is only useful for parsing (NOT interpreting) raw AIML
 # (for example, to implement an AIML validator).
-from AimlParser import AimlParser, AimlParserError
+from AimlParser import AimlParser
 
