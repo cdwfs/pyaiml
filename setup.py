@@ -5,7 +5,7 @@ import glob
 package_prefix = "Lib/site-packages/aiml"
 
 setup(name="PyAIML",
-    version="0.6.1",
+    version="0.7",
     author="Cort Stratton",
     author_email="cort@users.sourceforge.net",
     maintainer="Cort Stratton",
