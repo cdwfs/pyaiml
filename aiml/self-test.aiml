@@ -55,7 +55,7 @@ updating the tests in Kernel.py!
 <!-- get/set -->
 <category>
 <pattern>TEST GET AND SET</pattern>
-<template>I like <set name="food">cheese</set>.  My favorite food is <get name="food"/></template>
+<template>I like <set name="food">cheese</set>. My favorite food is <get name="food"/></template>
 </category>
 
 <!-- gossip -->
@@ -256,6 +256,15 @@ Nothing <random></random>here!
 <category>
 <pattern>郧上好</pattern>
 <template>Hey, you speak Chinese! 郧上好</template>
+</category>
+
+<!-- whitespace preservation -->
+<category>
+<pattern>TEST WHITESPACE</pattern>
+<template xml:space="preserve">Extra   Spaces
+   Rule!   <lowercase xml:space="default">(but   not   <set name="ignored">in
+                                           here!</set>)
+   </lowercase>   But   <set name="ignored">Here   They</set>   Do!</template>
 </category>
 
 </aiml>

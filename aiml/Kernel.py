@@ -929,14 +929,23 @@ class Kernel:
     def _processText(self,elem, sessionID):
         """Process a raw text element.
 
-        Raw text elements aren't AIML tags; they have no attributes,
-        and cannot contain any other elements.  Instead, the 3rd item of
-        the 'elem' list is a text string, which is immediately
-        returned.
-
+        Raw text elements aren't really AIML tags. Text elements cannot contain
+        other elements; instead, the third item of the 'elem' list is a text
+        string, which is immediately returned. They have a single attribute,
+        automatically inserted by the parser, which indicates whether whitespace
+        in the text should be preserved or not.
+        
         """
         try: elem[2] + ""
         except TypeError: raise TypeError, "Text element contents are not text"
+
+        # If the the whitespace behavior for this element is "default",
+        # we reduce all stretches of >1 whitespace characters to a single
+        # space.  To improve performance, we do this only once for each
+        # text element encountered, and save the results for the future.
+        if elem[1]["xml:space"] == "default":
+            elem[2] = re.sub("\s+", " ", elem[2])
+            elem[1]["xml:space"] = "preserve"
         return elem[2]
 
     # <that>
@@ -1119,7 +1128,7 @@ if __name__ == "__main__":
     
     _testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
     _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
-    _testTag(k, 'get/set', 'test get and set', ["I like cheese.  My favorite food is cheese"])
+    _testTag(k, 'get/set', 'test get and set', ["I like cheese. My favorite food is cheese"])
     _testTag(k, 'gossip', 'test gossip', ["Gossip is not yet implemented"])
     _testTag(k, 'id', 'test id', ["Your id is _global"])
     _testTag(k, 'input', 'test input', ['You just said: test input'])
@@ -1158,6 +1167,7 @@ if __name__ == "__main__":
     _testTag(k, 'unicode support', u"郧上好", [u"Hey, you speak Chinese! 郧上好"])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
+    _testTag(k, 'whitespace preservation', 'test whitespace', ["Extra   Spaces\n   Rule!   (but not in here!)    But   Here   They   Do!"])
 
     # Report test results
     print "--------------------"

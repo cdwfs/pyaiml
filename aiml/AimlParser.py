@@ -47,25 +47,53 @@ class AimlHandler(ContentHandler):
 		# one default <li> is allowed in each <condition> element.  We need
 		# a stack in order to correctly handle nested <condition> tags.
 		self._foundDefaultLiStack = []
+
+		# This stack of strings indicates what the current whitespace-handling
+		# behavior should be.  Each string in the stack is either "default" or
+		# "preserve".  When a new AIML element is encountered, a new string is
+		# pushed onto the stack, based on the value of the element's "xml:space"
+		# attribute (if absent, the top of the stack is pushed again).  When
+		# ending an element, pop an object off the stack.
+		self._whitespaceBehaviorStack = ["default"]
 		
 		self._elemStack = []
 		self._locator = Locator()
 		self.setDocumentLocator(self._locator)
 
 	def getNumErrors(self):
-		"Returns the number of errors found while parsing the current document."
+		"Return the number of errors found while parsing the current document."
 		return self._numParseErrors
 
 	def setEncoding(self, encoding):
-		"""Sets the text encoding to use when encoding strings read from XML.
-Defaults to 'UTF-8'."""
+		"""Set the text encoding to use when encoding strings read from XML.
+
+		Defaults to 'UTF-8'.
+
+		"""
 		self._encoding = encoding
 
 	def _location(self):
-		"Returns a string describing the current location in the source file."
+		"Return a string describing the current location in the source file."
 		line = self._locator.getLineNumber()
 		column = self._locator.getColumnNumber()
 		return "(line %d, column %d)" % (line, column)
+
+	def _pushWhitespaceBehavior(self, attr):
+		"""Push a new string onto the whitespaceBehaviorStack.
+
+		The string's value is taken from the "xml:space" attribute, if it exists
+		and has a legal value ("default" or "preserve").  Otherwise, the previous
+		stack element is duplicated.
+
+		"""
+		assert len(self._whitespaceBehaviorStack) > 0, "Whitespace behavior stack should never be empty!"
+		try:
+			if attr["xml:space"] == "default" or attr["xml:space"] == "preserve":
+				self._whitespaceBehaviorStack.append(attr["xml:space"])
+			else:
+				raise AimlParserError, "Invalid value for xml:space attribute "+self._location()
+		except KeyError:
+			self._whitespaceBehaviorStack.append(self._whitespaceBehaviorStack[-1])
 
 	def startElementNS(self, name, qname, attr):
 		print "QNAME:", qname
@@ -115,7 +143,8 @@ Defaults to 'UTF-8'."""
 				#print "WARNING: Missing 'version' attribute in <aiml> tag "+self._location()
 				#print "         Defaulting to version 1.0"
 				self._version = "1.0"
-			self._forwardCompatibleMode = (self._version != "1.0.1")			
+			self._forwardCompatibleMode = (self._version != "1.0.1")
+			self._pushWhitespaceBehavior(attr)			
 			# Not sure about this namespace business yet...
 			#try:
 			#	self._namespace = attr["xmlns"]
@@ -146,6 +175,7 @@ Defaults to 'UTF-8'."""
 			# If we're not inside a topic, the topic is implicitly set to *
 			if not self._insideTopic: self._currentTopic = u"*"
 			self._elemStack = []
+			self._pushWhitespaceBehavior(attr)
 		elif name == "pattern":
 			# <pattern> tags are only legal in the InsideCategory state
 			if self._state != self._STATE_InsideCategory:
@@ -166,6 +196,7 @@ Defaults to 'UTF-8'."""
 				self._currentThat = u"*"
 			self._state = self._STATE_InsideTemplate
 			self._elemStack.append(['template',{}])
+			self._pushWhitespaceBehavior(attr)
 		elif self._state == self._STATE_InsidePattern:
 			# Certain tags are allowed inside <pattern> elements.
 			if name == "bot" and attr.has_key("name") and attr["name"] == u"name":
@@ -193,6 +224,7 @@ Defaults to 'UTF-8'."""
 			self._validateElemStart(name, attrDict, self._version)
 			# Push the current element onto the element stack.
 			self._elemStack.append([name.encode(self._encoding),attrDict])
+			self._pushWhitespaceBehavior(attr)
 			# If this is a condition element, push a new entry onto the
 			# foundDefaultLiStack
 			if name == "condition":
@@ -268,7 +300,7 @@ Defaults to 'UTF-8'."""
 			if textElemOnStack:
 				self._elemStack[-1][-1][2] += text
 			else:
-				self._elemStack[-1].append(["text", {}, text])
+				self._elemStack[-1].append(["text", {"xml:space": self._whitespaceBehaviorStack[-1]}, text])
 		else:
 			# all other text is ignored
 			pass
@@ -320,6 +352,7 @@ Defaults to 'UTF-8'."""
 			if self._state != self._STATE_InsideAiml:
 				raise AimlParserError, "Unexpected </aiml> tag "+self._location()
 			self._state = self._STATE_OutsideAiml
+			self._whitespaceBehaviorStack.pop()
 		elif name == "topic":
 			# </topic> tags are only legal in the InsideAiml state, and
 			# only if _insideTopic is true.
@@ -336,6 +369,7 @@ Defaults to 'UTF-8'."""
 			# element in the categories dictionary.
 			key = (self._currentPattern.strip(), self._currentThat.strip(),self._currentTopic.strip())
 			self.categories[key] = self._elemStack[-1]
+			self._whitespaceBehaviorStack.pop()
 		elif name == "pattern":
 			# </pattern> tags are only legal in the InsidePattern state
 			if self._state != self._STATE_InsidePattern:
@@ -350,6 +384,7 @@ Defaults to 'UTF-8'."""
 			if self._state != self._STATE_InsideTemplate:
 				raise AimlParserError, "Unexpected </template> tag "+self._location()
 			self._state = self._STATE_AfterTemplate
+			self._whitespaceBehaviorStack.pop()
 		elif self._state == self._STATE_InsidePattern:
 			# Certain tags are allowed inside <pattern> elements.
 			if name not in ["bot"]:
@@ -363,6 +398,7 @@ Defaults to 'UTF-8'."""
 			# element at the top of the stack onto the one beneath it.
 			elem = self._elemStack.pop()
 			self._elemStack[-1].append(elem)
+			self._whitespaceBehaviorStack.pop()
 			# If the element was a condition, pop an item off the
 			# foundDefaultLiStack as well.
 			if elem[0] == "condition": self._foundDefaultLiStack.pop()
@@ -427,6 +463,7 @@ Defaults to 'UTF-8'."""
 				raise AimlParserError, ("Required \"%s\" attribute missing in <%s> element " % (a,name))+self._location()
 		for a in attr:
 			if a in required: continue
+			if a[0:4] == "xml:": continue # attributes in the "xml" namespace can appear anywhere
 			if a not in optional and not self._forwardCompatibleMode:
 				raise AimlParserError, ("Unexpected \"%s\" attribute in <%s> element " % (a,name))+self._location()
 
