@@ -5,7 +5,4 @@ Laundry list of future tasks, in no particular order:
    has an integer value, and not a string).
  - Support the Program D startup file syntax, or something similar?  It seems to
    be a good way to initialize bot settings and substitutions.
- - Finalize the persistent session data implementation.  It looks like the
-   most PyAIMLic solution is to provide a getSessionData() method that returns
-   a copy of the entire Kernel._sessions dictionary.  Then the bot author can
-   implement persistence however they'd like.
+ - Documentation/tutorials.
