@@ -263,7 +263,11 @@ this format).  Each section of the file is loaded into its own substituter."""
             # Oops -- there's no handler function for this atom
             # type!
             if self._verboseMode: print "No handler found for atom", atom[0]
-            return ""
+            # Process the unknown atom's contents and return them unaltered.
+            response = ""
+            for a in atom[2:]:
+                response += self._processAtom(a, sessionID)
+            return response
         return handlerFunc(atom, sessionID)
 
 
@@ -739,4 +743,4 @@ if __name__ == "__main__":
 
     # Run an interactive interpreter
     #print "\nEntering interactive mode (ctrl-c to exit)"
-    while True: print k.respond(raw_input("> "))
+    #while True: print k.respond(raw_input("> "))

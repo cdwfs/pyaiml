@@ -1,3 +1,8 @@
+version 0.5
+ - Unknown AIML tags are handled in a more forgiving fashion.  If an
+   unknown tag is encountered, instead of ignoring its contents entirely,
+   the contents are processed and returned unaltered.
+
 version 0.4
  - Added support for <star> and <sr> tags.
  - Considered adding support for the <secure> tag, but decided against it.
