@@ -17,11 +17,15 @@ import xml.sax
 
 class Kernel:
     # module constants
-    _globalSessionID = 0
+    _globalSessionID = 0 # key of the global session (duh)
+    _maxHistorySize = 10 # maximum length of the _inputs and _responses lists
+    # special predicate keys
+    _inputHistory = 1     # keys to a queue (list) of recent user input
+    _outputHistory = 2    # keys to a queue (list) of recent responses.
 
     def __init__(self, ):
         self._verboseMode = True
-        self._version = "0.1"
+        self._version = "0.3"
         self._brain = PatternMgr()
 
         # set up the sessions        
@@ -42,6 +46,7 @@ class Kernel:
             "formal":       self._processFormal,
             "gender":       self._processGender,
             "get":          self._processGet,
+            "input":        self._processInput,
             "learn":        self._processLearn,
             "li":           self._processLi,
             "lowercase":    self._processLowercase,
@@ -55,6 +60,7 @@ class Kernel:
             "srai":         self._processSrai,
             "system":       self._processSystem,
             "template":     self._processTemplate,
+            "that":         self._processThat,
             "think":        self._processThink,
             "uppercase":    self._processUppercase,
             "version":      self._processVersion,
@@ -172,8 +178,13 @@ this format).  Each section of the file is loaded into its own substituter."""
 
     def _addSession(self, sessionID):
         "Creates a new session with the specified ID string."
-        if not self._sessions.has_key(sessionID):
-            self._sessions[sessionID] = {}
+        if self._sessions.has_key(sessionID):
+            return
+        # Initialize the special predicates 
+        self._sessions[sessionID] = {
+            self._inputHistory: [],
+            self._outputHistory: []
+        }
     def _deleteSession(self, sessionID):
         "Deletes the specified session."
         if self._sessions.has_key(sessionID):
@@ -205,15 +216,30 @@ this format).  Each section of the file is loaded into its own substituter."""
 
         # run the input through the 'normal' subber
         subbedInput = self._subbers['normal'].sub(input)
+
+        # Add the input to the history list before fetching the
+        # response, so that <input/> tags work properly.
+        inputHistory = self.getPredicate(self._inputHistory, sessionID)
+        inputHistory.append(subbedInput)
+        if len(inputHistory) > self._maxHistorySize:
+            inputHistory.pop(0)        
         
         # Fetch the interpretable atom for the user's input
+        response = ""
         atom = self._brain.match(subbedInput)
         if atom is None:
             if self._verboseMode: print "No match found for input."
-            return ""
+        else:
+            # Process the atom into a response string.
+            response = self._processAtom(atom, sessionID).strip()
 
-        # Process the atom into a response string.
-        return self._processAtom(atom, sessionID).strip()
+        # add the data from this exchange to the history lists
+        outputHistory = self.getPredicate(self._outputHistory, sessionID)
+        outputHistory.append(response)
+        if len(outputHistory) > self._maxHistorySize:
+            outputHistory.pop(0)
+            
+        return response
 
     def _processAtom(self,atom, sessionID):
         # The first element of the 'atom' list is a
@@ -363,6 +389,24 @@ this format).  Each section of the file is loaded into its own substituter."""
             return self.getPredicate(atom[1]['name'], sessionID)
         except:
             # no name attribute, no such predicate, or no such session
+            return ""
+
+    # input
+    def _processInput(self, atom, sessionID):
+        # Input atoms return an entry from the input history for a
+        # given session.  The optional 'index' attribute specifies how
+        # far back to look (1 means the last input, 2 is the one
+        # before that, and so on).  The contents of the atom (there
+        # shouldn't be any) are ignored.
+        inputHistory = self.getPredicate(self._inputHistory, sessionID)
+        index = 1
+        try:
+            index = int(atom[1]['index'])
+        except:
+            pass
+        try: return inputHistory[-index]
+        except IndexError:
+            if self._verboseMode: print "No such index", index, "while processing <input> element."
             return ""
 
     # learn
@@ -538,6 +582,27 @@ this format).  Each section of the file is loaded into its own substituter."""
         # is returned immediately.
         return atom[2]
 
+    # that
+    def _processThat(self,atom, sessionID):
+        # That atoms (inside templates) are the output equivilant of
+        # <input> elements; they return one of the Kernel's previous
+        # responses, as specified by the optional 'index' attribute.
+        outputHistory = self.getPredicate(self._outputHistory, sessionID)
+        index = 1
+        try:
+            # According to the AIML spec, the index attribute contains two
+            # values, 'nx,ny'.  Only the first one seems to be relevant
+            # though.
+            index = int(atom[1]['index'].split(',')[0])
+        except:
+            pass
+        try: return outputHistory[-index]
+        except IndexError:
+            if self._verboseMode: print "No such index", index, "while processing <that> element."
+            return ""
+
+
+
     # think
     def _processThink(self,atom, sessionID):
         # Think atoms process their sub-atoms, and then discard the
@@ -612,6 +677,7 @@ if __name__ == "__main__":
     _testTag(k, 'formal', 'test formal', ["Formal Test Passed"])
     _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
     _testTag(k, 'get/set', 'test get and set', ["My favorite food is cheese"])
+    _testTag(k, 'input', 'test input', ['You just said: test input'])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
     _testTag(k, 'person', 'test person', ['YOU think me know that my actions threaten you and yours.'])
     _testTag(k, 'person2', 'test person2', ['HE think i knows that my actions threaten him and his.'])
@@ -620,6 +686,7 @@ if __name__ == "__main__":
     _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
     _testTag(k, 'srai', "test srai", ["srai test passed"])
     _testTag(k, 'system mode="sync"', "test system", ["The system says hello!"])
+    _testTag(k, 'that', "test that", ["I just said: The system says hello!"])
     _testTag(k, 'think', "test think", [""])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])

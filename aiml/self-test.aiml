@@ -52,6 +52,12 @@ updating the tests in Kernel.py!
 <template>My favorite <set name="food">cheese</set>food is <get name="food"/></template>
 </category>
 
+<!-- input -->
+<category>
+<pattern>TEST INPUT</pattern>
+<template>You just said: <input index="1"/></template>
+</category>
+
 <!-- lowercase --><category><pattern>TEST LOWERCASE</pattern><template>The Last Word Should Be <lowercase>Lowercase</lowercase></template></category>
 
 <!-- person -->
@@ -107,6 +113,12 @@ updating the tests in Kernel.py!
 <category>
 <pattern>TEST SYSTEM ASYNC</pattern>
 <template>Have a calculator!<system mode="async">C:\windows\system32\calc.exe</system></template>
+</category>
+
+<!-- that -->
+<category>
+<pattern>TEST THAT</pattern>
+<template>I just said: <that index="1,1"/></template>
 </category>
 
 <!-- think -->
