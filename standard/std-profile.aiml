@@ -14,7 +14,7 @@
 
 <category>
 <pattern>_</pattern>
-<that>WHAT CAN I CALL YOU</that>
+<that>* WHAT CAN I CALL YOU</that>
 <template>
 <think><set name="personality">average</set><set name="name"><formal><star/></formal></set></think>
 Nice to meet you <get name="name"/>.
@@ -23,7 +23,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>_</pattern>
-<that>WHAT COLOR ARE YOUR EYES</that>
+<that>* WHAT COLOR ARE YOUR EYES</that>
 <template>
 <set name="eyecolor"><star/></set> eyes are nice.
 </template>
@@ -31,7 +31,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>_</pattern>
-<that>WHAT COLOR IS YOUR HAIR</that>
+<that>* WHAT COLOR IS YOUR HAIR</that>
 <template>
 <set name="haircolor"><star/></set> is a nice hair color.
 </template>
@@ -39,7 +39,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>_</pattern>
-<that>WHAT IS THE COLOR OF YOUR EYES</that>
+<that>* WHAT IS THE COLOR OF YOUR EYES</that>
 <template>
 <set name="eyecolor"><star/></set> eyes are nice.
 </template>
@@ -47,7 +47,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>_</pattern>
-<that>WHAT IS THE COLOR OF YOUR HAIR</that>
+<that>* WHAT IS THE COLOR OF YOUR HAIR</that>
 <template>
 <set name="haircolor"><star/></set> is a nice hair color.
 </template>
@@ -55,7 +55,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>_</pattern>
-<that>WHAT IS YOUR AGE IN YEARS</that>
+<that>* WHAT IS YOUR AGE IN YEARS</that>
 <template>
 <srai>I AM <star/> YEARS OLD</srai>
 </template>
@@ -63,7 +63,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>*</pattern>
-<that>WHAT IS YOUR NAME</that>
+<that>* WHAT IS YOUR NAME</that>
 <template>
 <set name="name"><formal><star/></formal></set>, nice to meet you!
 <srai>GET NAME GENDER</srai>
@@ -72,7 +72,7 @@ Nice to meet you <get name="name"/>.
 
 <category>
 <pattern>*</pattern>
-<that>WHAT IS YOUR OCCUPATION</that>
+<that>* WHAT IS YOUR OCCUPATION</that>
 <template>
 <think><set name="job"><star/></set></think>
 That is interesting.<br />
@@ -82,7 +82,7 @@ That is interesting.<br />
 
 <category>
 <pattern>*</pattern>
-<that>WHAT IS YOUR FAVORITE COLOR</that>
+<that>* WHAT IS YOUR FAVORITE COLOR</that>
 <template>
 <think><set name="favcolor"><star/></set></think>
 That is a nice color.<br />
@@ -92,7 +92,7 @@ That is a nice color.<br />
 
 <category>
 <pattern>_</pattern>
-<that>WHAT IS YOUR FAVORITE MOVIE</that>
+<that>* WHAT IS YOUR FAVORITE MOVIE</that>
 <template>
 <think><set name="favmovie"><star/></set></think>
 I've never seen <set name="it"><star/></set>. 
@@ -105,7 +105,7 @@ I've never seen <set name="it"><star/></set>.
 
 <category>
 <pattern>*</pattern>
-<that>WHAT IS YOUR REAL NAME</that>
+<that>* WHAT IS YOUR REAL NAME</that>
 <template>
 <set name="name"><formal><star/></formal></set>, nice to meet you!
 <srai>GET NAME GENDER</srai>
@@ -134,7 +134,7 @@ I've never seen <set name="it"><star/></set>.
 
 <category>
 <pattern>A MAN</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM A MAN</srai>
 </template>
@@ -150,7 +150,7 @@ I've never seen <set name="it"><star/></set>.
 
 <category>
 <pattern>A WOMAN</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM FEMALE</srai>
 </template>
@@ -549,7 +549,7 @@ personality?</li>
 
 <category>
 <pattern>BLACK</pattern>
-<that>WHAT COLOR ARE YOUR EYES</that>
+<that>* WHAT COLOR ARE YOUR EYES</that>
 <template>
 Do you mean you have a black eye?
 </template>
@@ -557,7 +557,7 @@ Do you mean you have a black eye?
 
 <category>
 <pattern>BLACK</pattern>
-<that>WHAT IS THE COLOR OF YOUR EYES</that>
+<that>* WHAT IS THE COLOR OF YOUR EYES</that>
 <template>
 Do you mean you have a black eye?
 </template>
@@ -602,7 +602,7 @@ Most
 
 <category>
 <pattern>FEMALE</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM FEMALE</srai>
 </template>
@@ -624,7 +624,7 @@ Most
 
 <category>
 <pattern>GIRL</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM FEMALE</srai>
 </template>
@@ -1190,7 +1190,7 @@ I know a lot of kids your age: <set name="age">14</set>.
 
 <category>
 <pattern>I AM A *</pattern>
-<that>WHAT IS YOUR OCCUPATION</that>
+<that>* WHAT IS YOUR OCCUPATION</that>
 <template>
 That is interesting.<br />
 <think><set name="job"><star/></set></think>
@@ -3131,7 +3131,7 @@ How long have you been married?
 
 <category>
 <pattern>I M A *</pattern>
-<that>WHAT IS YOUR OCCUPATION</that>
+<that>* WHAT IS YOUR OCCUPATION</that>
 <template>
 <think><set name="job"><star/></set></think>
 That is interesting.<br />
@@ -3173,7 +3173,7 @@ That kind of discussion does not appeal to me.
 
 <category>
 <pattern>MALE</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM A MAN</srai>
 </template>
@@ -3195,7 +3195,7 @@ That kind of discussion does not appeal to me.
 
 <category>
 <pattern>MAN</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM A MAN</srai>
 </template>
@@ -3232,7 +3232,7 @@ Humans identify themselves with their eye color.
 
 <category>
 <pattern>MY EYES ARE *</pattern>
-<that>WHAT COLOR ARE YOUR EYES</that>
+<that>* WHAT COLOR ARE YOUR EYES</that>
 <template>
 <set name="eyecolor"><star/></set> eyes are nice.
 </template>
@@ -3240,7 +3240,7 @@ Humans identify themselves with their eye color.
 
 <category>
 <pattern>MY EYES ARE *</pattern>
-<that>WHAT IS THE COLOR OF YOUR EYES</that>
+<that>* WHAT IS THE COLOR OF YOUR EYES</that>
 <template>
 <set name="eyecolor"><star/></set> eyes are nice.
 </template>
@@ -3292,7 +3292,7 @@ I like brown eyes very much.
 
 <category>
 <pattern>MY HAIR IS *</pattern>
-<that>WHAT COLOR IS YOUR HAIR</that>
+<that>* WHAT COLOR IS YOUR HAIR</that>
 <template>
 <set name="haircolor"><star/></set> is a nice hair color.
 </template>
@@ -3300,7 +3300,7 @@ I like brown eyes very much.
 
 <category>
 <pattern>MY HAIR IS *</pattern>
-<that>WHAT IS THE COLOR OF YOUR HAIR</that>
+<that>* WHAT IS THE COLOR OF YOUR HAIR</that>
 <template>
 <set name="haircolor"><star/></set> is a nice hair color.
 </template>
@@ -3383,51 +3383,7 @@ I know, you told me before you were Bi Sexual.
 
 <category>
 <pattern>WHAT DO YOU KNOW ABOUT ME</pattern>
-<template>
-<get name="name"/>:
-<table border="2" cellspacing="2" cellpadding="2">
-<tr>
-<td>Name: <get name="name"/></td>
-<td>Age: <get name="age"/></td>
-<td>Gender: <get name="gender"/></td>
-</tr>
-<tr>
-<td>Eye color: <formal><get name="eyecolor"/></formal></td>
-<td>Hair color: <formal><get name="haircolor"/></formal></td>
-<td>Sexual preference: <get name="sexpref"/></td>
-</tr>
-<tr>
-<td>Spouse name: <get name="spouse"/> </td>
-<td>Marrital status: <get name="married"/></td>
-<td>Job: <get name="job"/></td>
-</tr>
-<tr>
-<td>Location: <formal><get name="location"/></formal></td>
-<td>Personality: <get name="personality"/></td>
-<td>Current mood: <get name="usermood"/></td>
-</tr>
-<tr>
-<td>You have: <get name="has"/></td>
-<td>Does: <get name="does"/></td>
-<td>Sign: <formal><get name="sign"/></formal></td>
-</tr>
-<tr>
-<td>Favorite color: <formal><get name="favcolor"/></formal></td>
-<td>Favorite movie: <formal><get name="favmovie"/></formal></td>
-<td>You said: <get name="memory"/></td>
-</tr>
-<tr>
-<td>You are: <get name="is"/></td>
-<td>You want: <get name="want"/></td>
-<td>You like: <get name="like"/></td>
-</tr>
-<tr>
-<td>You are: <get name="userhealth"/></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-</template>
+<template>Name: <get name="name"/>Age: <get name="age"/>Gender: <get name="gender"/>Eye color: <formal><get name="eyecolor"/></formal>Hair color: <formal><get name="haircolor"/></formal>Sexual preference: <get name="sexpref"/>Spouse name: <get name="spouse"/>Marrital status: <get name="married"/>Job: <get name="job"/>Location: <formal><get name="location"/></formal>Personality: <get name="personality"/>Current mood: <get name="usermood"/>You have: <get name="has"/>Does: <get name="does"/>Sign: <formal><get name="sign"/></formal>Favorite color: <formal><get name="favcolor"/></formal>Favorite movie: <formal><get name="favmovie"/></formal>You said: <get name="memory"/>You are: <get name="is"/>You want: <get name="want"/>You like: <get name="like"/>You are: <get name="userhealth"/></template>
 </category>
 
 <category>
@@ -3536,7 +3492,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>WOMAN</pattern>
-<that>ARE YOU A MAN OR A WOMAN</that>
+<that>* ARE YOU A MAN OR A WOMAN</that>
 <template>
 <srai>I AM FEMALE</srai>
 </template>
@@ -3547,7 +3503,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>*</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS <star/></srai></template>
 </category>
 
@@ -3593,14 +3549,14 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>AQUARIUS</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS ARIES</srai></template>
 </category>
 
 
 <category>
 <pattern>ARIES</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS ARIES</srai></template>
 </category>
 
@@ -3611,7 +3567,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>CANCER</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS CANCER</srai></template>
 </category>
 
@@ -3629,7 +3585,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>CAPRICORN</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS CAPRICORN</srai></template>
 </category>
 
@@ -3640,7 +3596,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>GEMINI</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS GEMINI</srai></template>
 </category>
 
@@ -3651,7 +3607,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>LEO</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS LEO</srai></template>
 </category>
 
@@ -3662,7 +3618,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>LIBRA</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS LIBRA</srai></template>
 </category>
 
@@ -3673,7 +3629,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>PISCES</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS PISCES</srai></template>
 </category>
 
@@ -3684,7 +3640,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>SAGGITARIUS</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS SAGGITARIUS</srai></template>
 </category>
 
@@ -3695,7 +3651,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>SCORPIO</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS SCORPIO</srai></template>
 </category>
 
@@ -3706,7 +3662,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>TAURUS</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS TAURUS</srai></template>
 </category>
 
@@ -3717,7 +3673,7 @@ Excuse me <get name="name"/>, but you told me you were a woman.
 
 <category>
 <pattern>VIRGO</pattern>
-<that>WHAT IS YOUR SIGN</that>
+<that>* WHAT IS YOUR SIGN</that>
 <template><srai>MY SIGN IS VIRGO</srai></template>
 </category>
 
