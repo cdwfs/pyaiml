@@ -31,7 +31,6 @@ The following tags are currently supported:
 Support for the following tags should be implemented in the next version:
 
 <bot name="name">
-<secure>
 <thatstar>
 
 The following tags are not supported:
@@ -40,6 +39,7 @@ The following tags are not supported:
 <id>
 <if>/<else>
 <javascript> (see notes)
+<secure> (see notes)
 <topic>
 <topicstar>
 
@@ -56,6 +56,22 @@ to simulate the effects of the <javascript> tag (i.e. dynamically-
 generated tag contents) using the <system mode="sync"> tag.  This
 solution has the added advantage of allowing *any* programming
 language to be used, not just JavaScript.
+
+<secure>
+Some AIML implementations support a non-standard <secure> tag, intended to
+wrap parts of a template which should only be processed if the user is
+"secure", or trusted.  After implementing support for this tag, I realized
+that it wasn't doing anything that you can't do with the <condition> tag.
+Therefore, I've decided to drop support for the <secure> tag.  You can
+easily duplicate its effects; simply replace this:
+	<secure error="you're not allowed">you are allowed</secure>
+with this:
+	<condition name="secure">
+		<li value="yes">you are allowed</li>
+		<li>you are not allowed</li>
+	</condition>
+Then, use the Kernel.setPredicate() call to set the "secure" predicate to
+"yes" for any session that you wish to be secure.
 
 <star>
 The star tag takes an optional "index" attribute, specifying which
