@@ -5,7 +5,7 @@ AIML interpreter kernel.  Do not make any modifications to this file without
 updating the tests in Kernel.py!
 -->
 
-<aiml version="1.0">
+<aiml version="1.0.1">
 <!-- bot -->
 <category>
 <pattern>TEST BOT</pattern>
@@ -58,6 +58,12 @@ updating the tests in Kernel.py!
 <template>I like <set name="food">cheese</set>.  My favorite food is <get name="food"/></template>
 </category>
 
+<!-- gossip -->
+<category>
+<pattern>TEST GOSSIP</pattern>
+<template>Gossip is not yet implemented<gossip>stuff</gossip></template>
+</category>
+
 <!-- id -->
 <category>
 <pattern>TEST ID</pattern>
@@ -68,6 +74,12 @@ updating the tests in Kernel.py!
 <category>
 <pattern>TEST INPUT</pattern>
 <template>You just said: <input index="1"/></template>
+</category>
+
+<!-- javascript -->
+<category>
+<pattern>TEST JAVASCRIPT</pattern>
+<template>Javascript is not yet implemented<javascript>var stuff</javascript></template>
 </category>
 
 <!-- lowercase --><category><pattern>TEST LOWERCASE</pattern><template>The Last Word Should Be <lowercase>Lowercase</lowercase></template></category>
