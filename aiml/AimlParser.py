@@ -1,5 +1,6 @@
 from xml.sax.handler import ContentHandler
 from xml.sax.xmlreader import Locator
+import sys
 
 class AimlParserError(Exception): pass
 
@@ -76,7 +77,8 @@ class AimlParser(ContentHandler):
 		try: self._startElement(name, attr)
 		except AimlParserError, msg:
 			# Print the error message
-			print "PARSE ERROR:", msg
+			sys.stderr.write("PARSE ERROR: %s\n" % msg)
+			
 			self._numParseErrors += 1 # increment error count
 			# In case of a parse error, if we're inside a category, skip it.
 			if self._state >= self._STATE_InsideCategory:
@@ -204,7 +206,7 @@ class AimlParser(ContentHandler):
 		try: self._characters(ch)
 		except AimlParserError, msg:
 			# Print the message
-			print "PARSE ERROR:", msg
+			sys.stderr.write("PARSE ERROR: %s\n" % msg)
 			self._numParseErrors += 1 # increment error count
 			# In case of a parse error, if we're inside a category, skip it.
 			if self._state >= self._STATE_InsideCategory:
@@ -278,7 +280,7 @@ class AimlParser(ContentHandler):
 		try: self._endElement(name)
 		except AimlParserError, msg:
 			# Print the message
-			print "PARSE ERROR:", msg
+			sys.stderr.write("PARSE ERROR: %s\n" % msg)
 			self._numParseErrors += 1 # increment error count
 			# In case of a parse error, if we're inside a category, skip it.
 			if self._state >= self._STATE_InsideCategory:

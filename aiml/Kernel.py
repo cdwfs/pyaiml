@@ -249,7 +249,8 @@ session dictionaries."""
             handler = AimlParser()
             try: xml.sax.parse(f, handler)
             except xml.sax.SAXParseException, msg:
-                print "\nFATAL PARSE ERROR in file %s:\n%s" % (f,msg)
+                err = "\nFATAL PARSE ERROR in file %s:\n%s\n" % (f,msg)
+                sys.stderr.write(err)
                 continue
             # store the pattern/template pairs in the PatternMgr.
             for key,tem in handler.categories.items():
@@ -333,7 +334,9 @@ session dictionaries."""
         response = ""
         elem = self._brain.match(subbedInput, subbedThat, subbedTopic)
         if elem is None:
-            if self._verboseMode: print "No match found for input:", input
+            if self._verboseMode:
+                err = "WARNING: No match found for input: %s\n" % input
+                sys.stderr.write(err)
         else:
             # Process the element into a response string.
             response += self._processElement(elem, sessionID).strip()
@@ -359,7 +362,9 @@ session dictionaries."""
         except:
             # Oops -- there's no handler function for this element
             # type!
-            if self._verboseMode: print "No handler found for <%s> element" % elem[0]
+            if self._verboseMode:
+                err = "WARNING: No handler found for <%s> element\n" % elem[0]
+                sys.stderr.write(err)
             return ""
         return handlerFunc(elem, sessionID)
 
@@ -525,7 +530,9 @@ session dictionaries."""
         except: index = 1
         try: return inputHistory[-index]
         except IndexError:
-            if self._verboseMode: print "No such index", index, "while processing <input> element."
+            if self._verboseMode:
+                err = "No such index %d while processing <input> element.\n" % index
+                sys.stderr.write(err)
             return ""
 
     # javascript
@@ -673,7 +680,9 @@ session dictionaries."""
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
-            if self._verboseMode: print "WARNING: index>1 has no meaning in <star> tags"
+            if self._verboseMode:
+                err = "WARNING: index>1 currently has no meaning in <star> tags.\n"
+                sys.stderr.write(err)
             return ""
         # fetch the user's last input
         inputStack = self.getPredicate(self._inputStack, sessionID)
@@ -712,7 +721,7 @@ session dictionaries."""
             out = os.popen(command)            
         except RuntimeError, msg:
             if self._verboseMode:
-                err = "WARNING: RuntimeError while processing \"system\" element:\n%s" % msg
+                err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg
                 sys.stderr.write(err)
             return "There was an error while computing my response.  Please inform my botmaster."
         for line in out:
@@ -756,7 +765,9 @@ session dictionaries."""
             pass
         try: return outputHistory[-index]
         except IndexError:
-            if self._verboseMode: print "No such index", index, "while processing <that> element."
+            if self._verboseMode:
+                err = "No such index %d while processing <that> element.\n" % index
+                sys.stderr.write(err)
             return ""
 
     # thatstar
@@ -768,7 +779,9 @@ session dictionaries."""
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
-            if self._verboseMode: print "WARNING: index>1 has no meaning in <thatstar> tags"
+            if self._verboseMode:
+                err = "WARNING: index>1 currently has no meaning in <thatstar> tags.\n"
+                sys.stderr.write(err)
             return ""
         # fetch the user's last input
         inputStack = self.getPredicate(self._inputStack, sessionID)
@@ -800,7 +813,9 @@ session dictionaries."""
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         if index > 1:
-            if self._verboseMode: print "WARNING: index>1 has no meaning in <topicstar> tags"
+            if self._verboseMode:
+                err = "WARNING: index>1 currently has no meaning in <topicstar> tags.\n"
+                sys.stderr.write(err)
             return ""
         # fetch the user's last input
         inputStack = self.getPredicate(self._inputStack, sessionID)
