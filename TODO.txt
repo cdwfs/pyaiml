@@ -3,7 +3,6 @@ Laundry list of future tasks, in no particular order:
  - AIML 1.0.1 compliance (highest priority):
    - Unknown yet well-defined elements (e.g. HTML) inside templates
      (see sections 3.2, 3.6).
-   - formalize whitespace handling (sees section 2.10).
    - AimlParser._validateElemStart() needs to test the well-formedness of
      attribute values (for example, making sure that the "index" attribute
      has an integer value, and not a string).  UPDATE: this works for <star>,
