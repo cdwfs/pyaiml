@@ -41,19 +41,7 @@
 <learn>standard/std-turing.aiml</learn>
 <learn>standard/std-yesno.aiml</learn>
 
-<!-- Load some Howie-specific AIML files -->
-<learn>standard/dev-googlism.aiml</learn>
-
 </template>
-</category>
-
-<!-- Loads an AIML file while the bot is running -->
-
-<category>
-<pattern>LOAD *</pattern>
-<secure error="You are not allowed to load files.">
-<template><learn><star/>.aiml</learn></template>
-</secure>
 </category>
 
 </aiml>
