@@ -53,6 +53,18 @@ updating the tests in Kernel.py!
 </category>
 
 <!-- lowercase --><category><pattern>TEST LOWERCASE</pattern><template>The Last Word Should Be <lowercase>Lowercase</lowercase></template></category>
+
+<!-- person -->
+<category>
+<pattern>TEST PERSON</pattern>
+<template><person>I think you know that your actions threaten me and mine.</person></template>
+</category>
+
+<!-- person2 -->
+<category>
+<pattern>TEST PERSON2</pattern>
+<template><person2>I think he knows that his actions threaten me and mine.</person2></template>
+</category>
 <!-- random -->
 <category>
 <pattern>TEST RANDOM</pattern>

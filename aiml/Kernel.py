@@ -1,9 +1,12 @@
 """
 This file contains the public interface to the aiml module.
 """
+import DefaultSubs
 from LearnHandler import LearnHandler
 from PatternMgr import PatternMgr
+from WordSub import WordSub
 
+from ConfigParser import RawConfigParser
 import os
 import random
 import re
@@ -20,8 +23,19 @@ class Kernel:
         self._verboseMode = True
         self._version = "0.1"
         self._brain = PatternMgr()
-        self._sessions = {}
+
+        # set up the sessions        
+        self._sessions = {}        
         self._addSession(self._globalSessionID)
+
+        # set up the word substitutors (subbers):
+        self._subbers = {}
+        self._subbers['gender'] = WordSub(DefaultSubs.defaultGender)
+        self._subbers['person'] = WordSub(DefaultSubs.defaultPerson)
+        self._subbers['person2'] = WordSub(DefaultSubs.defaultPerson2)
+        self._subbers['normal'] = WordSub(DefaultSubs.defaultNormal)
+        
+        # set up the atom processors
         self._atomProcessors = {
             "condition":    self._processCondition,
             "date":         self._processDate,
@@ -31,6 +45,8 @@ class Kernel:
             "learn":        self._processLearn,
             "li":           self._processLi,
             "lowercase":    self._processLowercase,
+            "person":       self._processPerson,
+            "person2":      self._processPerson2,
             "random":       self._processRandom,
             "sentence":     self._processSentence,
             "set":          self._processSet,
@@ -59,10 +75,22 @@ class Kernel:
         start = time.clock()
         if brainFile:
             self.loadBrain(brainFile)
-        for file in learnFiles:
+
+        # learnFiles might be a string, in which case it should be
+        # turned into a single-element list.
+        learns = learnFiles
+        try: learns = [ learnFiles + "" ]
+        except: pass
+        for file in learns:
             self.learn(file)
-        for cmd in commands:
+            
+        # ditto for commands
+        cmds = commands
+        try: cmds = [ commands + "" ]
+        except: pass
+        for cmd in cmds:
             print self.respond(cmd)
+            
         if self._verboseMode:
             print "Kernel bootstrap completed in %.2f seconds" % (time.clock() - start)
 
@@ -123,6 +151,24 @@ class Kernel:
             # silently fail if no such session exists
             if self._verboseMode: print "WARNING: no such sessionID", sessionID
 
+    def loadSubs(self, filename):
+        """Load a substitutions file.  The file must be in the Windows-style INI
+format (see the standard ConfigParser module docs for information on
+this format).  Each section of the file is loaded into its own substituter."""
+        inFile = open(filename)
+        parser = RawConfigParser()
+        parser.readfp(inFile, filename)
+        inFile.close()
+        for s in parser.sections():
+            # Add a new WordSub instance for this section.  If one already
+            # exists, delete it.
+            if self._subbers.has_key(s):
+                del(self._subbers[s])
+            self._subbers[s] = WordSub()
+            # iterate over the key,value pairs and add them to the subber
+            for k,v in parser.items(s):
+                self._subbers[s][k] = v
+
     def _addSession(self, sessionID):
         "Creates a new session with the specified ID string."
         if not self._sessions.has_key(sessionID):
@@ -155,9 +201,12 @@ class Kernel:
         
         # Add the session, if it doesn't already exist
         self._addSession(sessionID)
+
+        # run the input through the 'normal' subber
+        subbedInput = self._subbers['normal'].sub(input)
         
         # Fetch the interpretable atom for the user's input
-        atom = self._brain.match(input)
+        atom = self._brain.match(subbedInput)
         if atom is None:
             if self._verboseMode: print "No match found for input."
             return ""
@@ -305,27 +354,8 @@ class Kernel:
         response = ""
         for a in atom[2:]:
             response += self._processAtom(a, sessionID)
-        # NOTE: Correctly determining how to replace 'his' ('her' vs.
-        # 'hers') and 'her' ('his' vs. 'him') is impossible without a
-        # full-on natural language parser.
-        subs = {
-            "he":"she", "He":"She", "HE":"SHE",
-            "him":"her", "Him":"Her", "HIM":"HER",
-            "his":"her", "His":"Her", "HIS":"HER",
-            "himself":"herself", "Himself":"Herself", "HIMSELF":"HERSELF",
-            "she":"he", "She":"He", "SHE":"HE",
-            "her":"him", "Her":"Him", "HER":"HIM",
-            "hers":"his", "Hers":"His", "HERS":"HIS",
-            "herself":"himself", "Herself":"Himself", "HERSELF":"HIMSELF",
-        }
-        words = string.split(response)
-        for i in range(len(words)):
-            for k,v in subs.items():
-                (words[i],count) = re.subn("^("+k+")(\W|$)", v+"\g<2>", words[i])
-                # if we found a match, stop looking for more!
-                if count > 0:
-                    break
-        return string.join(words)
+        # Run the results through the gender subber.
+        return self._subbers['gender'].sub(response)
 
     # get
     def _processGet(self, atom, sessionID):
@@ -370,34 +400,23 @@ class Kernel:
     # person
     def _processPerson(self,atom, sessionID):
         # Person atoms process their contents, and then convert all
-        # pronouns from 1st person to 3rd person, and vice versa.
+        # pronouns from 1st person to 2nd person, and vice versa.
         response = ""
         for a in atom[2:]:
             response += self._processAtom(a, sessionID)
-        # NOTE: Correctly determining how to replace 'his' ('her' vs.
-        # 'hers') and 'her' ('his' vs. 'him') is impossible without a
-        # full-on natural language parser.
-        subs = {
-            # 3rd->1st (masculine)
-            "he":"I", "He":"I", "HE":"I",
-            "him":"me", "Him":"Me", "HIM":"ME",
-            "his":"my", "His":"My", "HIS":"MY",
-            "himself":"myself", "Himself":"Myself", "HIMSELF":"MYSELF",
-            
-            # 3rd->1st (feminine)
-            "she":"I", "She":"I", "SHE":"I",
-            "her":"me", "Her":"Me", "HER":"ME",
-            "hers":"mine", "Hers":"Mine", "HERS":"MINE",
-            "herself":"myself", "Herself":"Myself", "HERSELF":"MYSELF",
-        }
-        words = string.split(response)
-        for i in range(len(words)):
-            for k,v in subs.items():
-                (words[i],count) = re.subn("^("+k+")(\W|$)", v+"\g<2>", words[i])
-                # if we found a match, stop looking for more!
-                if count > 0:
-                    break
-        return string.join(words)
+        # run it through the 'person' subber
+        return self._subbers['person'].sub(response)
+
+    # person2
+    def _processPerson2(self,atom, sessionID):
+        # Person2 atoms process their contents, and then convert all
+        # pronouns from 1st person to 3nd person, and vice versa.
+        # TODO: translate <person2/> into <person2><star/></person2>
+        response = ""
+        for a in atom[2:]:
+            response += self._processAtom(a, sessionID)
+        # run it through the 'person2' subber
+        return self._subbers['person2'].sub(response)
         
     # random
     def _processRandom(self, atom, sessionID):
@@ -589,6 +608,8 @@ if __name__ == "__main__":
     _testTag(k, 'gender', 'test gender', ["He'd told her he heard that her hernia is history"])
     _testTag(k, 'get/set', 'test get and set', ["My favorite food is cheese"])
     _testTag(k, 'lowercase', 'test lowercase', ["The Last Word Should Be lowercase"])
+    _testTag(k, 'person', 'test person', ['YOU think me know that my actions threaten you and yours.'])
+    _testTag(k, 'person2', 'test person2', ['HE think i knows that my actions threaten him and his.'])
     _testTag(k, 'random', 'test random', ["response #1", "response #2", "response #3"])
     _testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])
     _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
