@@ -84,7 +84,7 @@ version 0.4.1
 
 version 0.4
  - Added support for "star" and "sr" tags.
- - Considered adding support for the <secure> tag, but decided against it.
+ - Considered adding support for the "secure" tag, but decided against it.
    see SUPPORTED_TAGS.txt for more information.
 
 version 0.3
