@@ -1,10 +1,15 @@
 """
-Python AIML Validator, v1.0
+Python AIML Validator, v1.0.1
 Author: Cort Stratton (cort@users.sourceforge.net)
 
 Usage:
     aimlvalidate.py file1.aiml [file2.aiml ...]
 """
+
+# Revision history:
+#
+# 1.0.1: Redirected stderr to stdout
+# 1.0: Initial release
 
 import aiml
 import glob
@@ -16,6 +21,9 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print __doc__
         sys.exit(2)
+
+    # AimlParser prints its errors to stderr; we redirect stderr to stdout.
+    sys.stderr = sys.stdout
 
     # Iterate over input files    
     validCount = 0
