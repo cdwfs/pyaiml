@@ -2,11 +2,12 @@
 This file contains the public interface to the aiml module.
 """
 import DefaultSubs
+import Utils
 from LearnHandler import LearnHandler
 from PatternMgr import PatternMgr
 from WordSub import WordSub
 
-from ConfigParser import RawConfigParser
+from ConfigParser import ConfigParser
 import glob
 import os
 import random
@@ -72,7 +73,9 @@ class Kernel:
             "system":       self._processSystem,
             "template":     self._processTemplate,
             "that":         self._processThat,
+            "thatstar":     self._processThatstar,
             "think":        self._processThink,
+            "topicstar":    self._processTopicstar,
             "uppercase":    self._processUppercase,
             "version":      self._processVersion,
         }
@@ -174,7 +177,6 @@ class Kernel:
             return self._sessions[sessionID][name]
         except:
             # no such session or predicate
-            if self._verboseMode: print "No such predicate", name, "in session", sessionID
             return ""
 
     def setPredicate(self, name, value, sessionID = _globalSessionID):
@@ -187,7 +189,7 @@ class Kernel:
 format (see the standard ConfigParser module docs for information on
 this format).  Each section of the file is loaded into its own substituter."""
         inFile = file(filename)
-        parser = RawConfigParser()
+        parser = ConfigParser()
         parser.readfp(inFile, filename)
         inFile.close()
         for s in parser.sections():
@@ -258,8 +260,7 @@ session data in memory, so it should be called shortly after startup."""
             
             # store the pattern/template pairs in the PatternMgr.
             for key,tem in handler.categories.items():
-                pat,that = key
-                self._brain.add(pat, that, tem)
+                self._brain.add(key,tem)
 
             if self._verboseMode:
                 print "done (%.2f seconds)" % (time.clock() - start)
@@ -275,23 +276,31 @@ session data in memory, so it should be called shortly after startup."""
         # Add the session, if it doesn't already exist
         self._addSession(sessionID)
 
-        # Add the input to the history list before fetching the
-        # response, so that <input/> tags work properly.
-        inputHistory = self.getPredicate(self._inputHistory, sessionID)
-        inputHistory.append(input)
-        while len(inputHistory) > self._maxHistorySize:
-            inputHistory.pop(0)
-        self.setPredicate(self._inputHistory, inputHistory, sessionID)
-        
-        # Fetch the response
-        response = self._respond(input, sessionID)
+        # split the input into discrete sentences
+        sentences = Utils.sentences(input)
+        finalResponse = ""
+        for s in sentences:
+            # Add the input to the history list before fetching the
+            # response, so that <input/> tags work properly.
+            inputHistory = self.getPredicate(self._inputHistory, sessionID)
+            inputHistory.append(s)
+            while len(inputHistory) > self._maxHistorySize:
+                inputHistory.pop(0)
+            self.setPredicate(self._inputHistory, inputHistory, sessionID)
+            
+            # Fetch the response
+            response = self._respond(s, sessionID)
 
-        # add the data from this exchange to the history lists
-        outputHistory = self.getPredicate(self._outputHistory, sessionID)
-        outputHistory.append(response)
-        while len(outputHistory) > self._maxHistorySize:
-            outputHistory.pop(0)
-        self.setPredicate(self._outputHistory, outputHistory, sessionID)
+            # add the data from this exchange to the history lists
+            outputHistory = self.getPredicate(self._outputHistory, sessionID)
+            outputHistory.append(response)
+            while len(outputHistory) > self._maxHistorySize:
+                outputHistory.pop(0)
+            self.setPredicate(self._outputHistory, outputHistory, sessionID)
+
+            # append this response to the final response.
+            finalResponse += (response + "  ")
+        finalResponse = finalResponse.strip()
 
         # sync the session file
         try: self._sessions[sessionID].sync()
@@ -300,7 +309,7 @@ session data in memory, so it should be called shortly after startup."""
         
         # release the lock and return
         self._respondLock.release()
-        return response
+        return finalResponse
 
     # This version of _respond() just fetches the response for some input.
     # It does not mess with the input and output histories.  Recursive calls
@@ -321,14 +330,20 @@ session data in memory, so it should be called shortly after startup."""
         except IndexError: that = ""
         subbedThat = self._subbers['normal'].sub(that)
 
-        # Find the atom that matches this input
+        # fetch the current topic
+        topic = self.getPredicate("topic", sessionID)
+        subbedTopic = self._subbers['normal'].sub(topic)
+
+        # Determine the final response.
         response = ""
-        atom = self._brain.match(subbedInput, subbedThat)
+        atom = self._brain.match(subbedInput, subbedThat, subbedTopic)
         if atom is None:
-            if self._verboseMode: print "No match found for input."
+            if self._verboseMode: print "No match found for input:", s
         else:
             # Process the atom into a response string.
-            response = self._processAtom(atom, sessionID).strip()
+            response += self._processAtom(atom, sessionID).strip()
+            response += " "
+        response = response.strip()
         return response
 
     def _processAtom(self,atom, sessionID):
@@ -561,8 +576,7 @@ session data in memory, so it should be called shortly after startup."""
         response = ""
         for a in atom[2:]:
             response += self._processAtom(a, sessionID)
-        # A person tag with no contents, a la <person/>, is a shortcut
-        # for <person><star/><person>.
+        # An atomic <person/> tag, is a shortcut for <person><star/><person>.
         if len(atom[2:]) == 0:
             response = self._processAtom(['star',{}], sessionID)
     
@@ -573,10 +587,12 @@ session data in memory, so it should be called shortly after startup."""
     def _processPerson2(self,atom, sessionID):
         # Person2 atoms process their contents, and then convert all
         # pronouns from 1st person to 3nd person, and vice versa.
-        # TODO: translate <person2/> into <person2><star/></person2>
         response = ""
         for a in atom[2:]:
             response += self._processAtom(a, sessionID)
+        # An atomic <person2/> tag, is a shortcut for <person><star/><person>.
+        if len(atom[2:]) == 0:
+            response = self._processAtom(['star',{}], sessionID)
         # run it through the 'person2' subber
         return self._subbers['person2'].sub(response)
         
@@ -672,7 +688,8 @@ session data in memory, so it should be called shortly after startup."""
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
         try: that = self._subbers['normal'].sub(outputHistory[-1])
         except: that = "" # there might not be any output yet
-        response = self._brain.star(input, that)
+        topic = self.getPredicate("topic", sessionID)
+        response = self._brain.star("star", input, that, topic)
         return response
     
     # system
@@ -753,7 +770,27 @@ session data in memory, so it should be called shortly after startup."""
             if self._verboseMode: print "No such index", index, "while processing <that> element."
             return ""
 
-
+    # thatstar
+    def _processThatstar(self, atom, sessionID):
+        # Thatstar atoms are similar to star atoms, except that where <star/>
+        # returns the portion of the input pattern that was matched by a *,
+        # <thatstar/> returns the portion of the "that" pattern that was
+        # matched by a *.
+        try: index = int(atom[1]['index'])
+        except KeyError: index = 1
+        if index > 1:
+            if self._verboseMode: print "WARNING: index>1 has no meaning in <thatstar> tags"
+            return ""
+        # fetch the user's last input
+        inputHistory = self.getPredicate(self._inputHistory, sessionID)
+        input = self._subbers['normal'].sub(inputHistory[-1])
+        # fetch the Kernel's last response (for 'that' context)
+        outputHistory = self.getPredicate(self._outputHistory, sessionID)
+        try: that = self._subbers['normal'].sub(outputHistory[-1])
+        except: that = "" # there might not be any output yet
+        topic = self.getPredicate("topic", sessionID)
+        response = self._brain.star("thatstar", input, that, topic)
+        return response
 
     # think
     def _processThink(self,atom, sessionID):
@@ -764,6 +801,28 @@ session data in memory, so it should be called shortly after startup."""
         for a in atom[2:]:
             self._processAtom(a, sessionID)
         return ""
+
+    # topicstar
+    def _processTopicstar(self, atom, sessionID):
+        # Topicstar atoms are similar to star atoms, except that where <star/>
+        # returns the portion of the input pattern that was matched by a *,
+        # <topicstar/> returns the portion of the "topic" pattern that was
+        # matched by a *.
+        try: index = int(atom[1]['index'])
+        except KeyError: index = 1
+        if index > 1:
+            if self._verboseMode: print "WARNING: index>1 has no meaning in <topicstar> tags"
+            return ""
+        # fetch the user's last input
+        inputHistory = self.getPredicate(self._inputHistory, sessionID)
+        input = self._subbers['normal'].sub(inputHistory[-1])
+        # fetch the Kernel's last response (for 'that' context)
+        outputHistory = self.getPredicate(self._outputHistory, sessionID)
+        try: that = self._subbers['normal'].sub(outputHistory[-1])
+        except: that = "" # there might not be any output yet
+        topic = self.getPredicate("topic", sessionID)
+        response = self._brain.star("topicstar", input, that, topic)
+        return response
 
     # uppercase
     def _processUppercase(self,atom, sessionID):
@@ -778,7 +837,7 @@ session data in memory, so it should be called shortly after startup."""
     def _processVersion(self,atom, sessionID):
         # Version atoms resolve to the current interpreter version.
         # Any sub-atoms are ignored.
-        return self._version
+        return self.version()
 
 
 ##################################################
@@ -789,10 +848,13 @@ def _testTag(kern, tag, input, outputList):
     Tests 'tag' by feeding the Kernel 'input'.  If the result matches any of
     the strings in 'outputList', the test passes.
     """
+    global _numTests, _numPassed
+    _numTests += 1
     print "Testing <" + tag + ">:",
     response = kern.respond(input)
     if response in outputList:
         print "PASSED"
+        _numPassed += 1
         return True
     else:
         print "FAILED (response: '%s')" % response
@@ -802,6 +864,10 @@ if __name__ == "__main__":
     # Run some self-tests
     k = Kernel()
     k.bootstrap(learnFiles="self-test.aiml")
+
+    global _numTests, _numPassed
+    _numTests = 0
+    _numPassed = 0
 
     _testTag(k, 'bot', 'test bot', ["My name is Nameless"])
 
@@ -848,9 +914,22 @@ if __name__ == "__main__":
     _testTag(k, 'system mode="sync"', "test system", ["The system says hello!"])
     _testTag(k, 'that test #1', "test that", ["I just said: The system says hello!"])
     _testTag(k, 'that test #2', "test that", ["I have already answered this question"])
+    _testTag(k, 'thatstar test #1', "test thatstar", ["I say beans"])
+    _testTag(k, 'thatstar test #2', "test thatstar", ["I just said \"beans\""])
     _testTag(k, 'think', "test think", [""])
+    k.setPredicate("topic", "fruit")
+    _testTag(k, 'topic', "test topic", ["We were discussing apples and oranges"]) 
+    k.setPredicate("topic", "Soylent Green")
+    _testTag(k, 'topicstar', 'test topicstar', ["Solyent Green is made of people!"])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
+
+    # Report test results
+    print "--------------------"
+    if _numTests == _numPassed:
+        print "All tests passed!"
+    else:
+        print "%d of %d tests passed (see above for detailed errors)" % (_numPassed, _numTests)
 
     # Run an interactive interpreter
     #print "\nEntering interactive mode (ctrl-c to exit)"
