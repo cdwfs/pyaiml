@@ -24,7 +24,7 @@ The following tags are currently supported:
 	<sr>
 	<srai>
 	<star> (see notes)
-	<system> (see notes)
+	<system>
 	<that>
 	<thatstar>
 	<think>
@@ -99,12 +99,6 @@ star in the pattern to expand and return.  However, the AIML reference
 seems to specify that there can only be one * in a given pattern,
 and PyAIML adheres to this restriction.  Therefore, index values other
 than 1 are meaningless (and ignored).
-
-<system>
-PyAIML supports a non-standard "mode" attribute in <system> tags.
-The value of the mode attribute can be either "async" or "sync"
-(the default).  Sync-mode implements the behavior described in
-the AIML Reference Manual.  Async-mode causes the specified
-command to be run in a separate process; the interpreter returns
-immediately, and does not capture the output of the spawned
-sub-process (instead returning an empty string).
+UPDATE: Okay, I was wrong; you can have multiple stars in a pattern.
+I'm still working on support for this, though, so for now it won't
+work yet.

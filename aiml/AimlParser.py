@@ -306,7 +306,7 @@ class AimlParser(ContentHandler):
 		"sr":           ( [], [], False ),
 		"srai":         ( [], [], True ),
 		"star":         ( [], ["index"], False ),
-		"system":       ( [], ["mode"], True ), # the "mode" attribute is non-standard
+		"system":       ( [], [], True ),
 		"template":		( [], [], True ), # needs to be in the list because it can be a parent.
 		"that":         ( [], ["index"], False ),
 		"thatstar":     ( [], ["index"], False ),

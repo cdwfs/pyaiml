@@ -31,7 +31,7 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.7"
+        self._version = "PyAIML 0.8"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
 
@@ -723,21 +723,9 @@ session data in memory, so it should be called shortly after startup."""
     
     # system
     def _processSystem(self,elem, sessionID):
-        # System elements cause a command to be executed. If the optional
-        # 'mode' attribute is set to "async", the command is run in
-        # the background and its output is ignored.  If mode is "sync"
-        # (the default), the process is executed, and the interpreter
-        # blocks until it exits.  In this case, the element returns any
-        # output of the command.
-
-        # determine the mode
-        syncMode = True
-        try:
-            attr = elem[1]
-            if attr['mode'] == 'async':
-                syncMode = False
-        except:
-            pass # keep the default
+        # System elements cause a command to be executed.  The
+        # interpreter blocks until the command is complete, and
+        # returns the command's output.
 
         # build up the command string
         command = ""
@@ -746,21 +734,10 @@ session data in memory, so it should be called shortly after startup."""
 
         # execute the command.
         response = ""
-        if syncMode:
-            out = os.popen(command)
-            for line in out:
-                response += line
-            response = string.join(response.splitlines())
-        else:
-            # known issue: Win32 Python doesn't support the
-            # os.spawn*p* functions, so under Windows, command must be
-            # an absolute or relative path. This SUCKS.  Hope it gets
-            # fixed soon.
-            cmdlist = string.split(command)
-            try:
-                pid = os.spawnvpe(os.P_NOWAIT, cmdlist[0], cmdlist, os.environ)
-            except AttributeError:
-                pid = os.spawnve(os.P_NOWAIT, cmdlist[0], cmdlist, os.environ)
+        out = os.popen(command)
+        for line in out:
+            response += line + "\n"
+        response = string.join(response.splitlines()).strip()
         return response
 
     # template

@@ -1,3 +1,7 @@
+version 0.8:
+ - Removed support for non-standard "mode" attribute in "system" elements.
+   It just wasn't worth breaking the AIML standard for.
+
 version 0.7:
  - Further improved AIML parsing; missing or invalid XML attributes are now
    detected at parse-time.  There's also a first stab at support for Forward

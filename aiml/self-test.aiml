@@ -160,11 +160,7 @@ updating the tests in Kernel.py!
 <!-- system -->
 <category>
 <pattern>TEST SYSTEM</pattern>
-<template>The system says <system mode="sync">echo hello</system>!</template>
-</category>
-<category>
-<pattern>TEST SYSTEM ASYNC</pattern>
-<template>Have a calculator!<system mode="async">C:\windows\system32\calc.exe</system></template>
+<template>The system says <system>echo hello</system>!</template>
 </category>
 
 <!-- that -->
