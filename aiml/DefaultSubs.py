@@ -91,10 +91,30 @@ defaultNormal = {
     "wanna": "want to",
     "gonna": "going to",
 
+    "I'm": "I am",
+    "I'd": "I would",
+    "I'll": "I will",
+    "I've": "I have",
     "you'd": "you would",
     "you're": "you are",
     "you've": "you have",
     "you'll": "you will",
+    "he's": "he is",
+    "he'd": "he would",
+    "he'll": "he will",
+    "she's": "she is",
+    "she'd": "she would",
+    "she'll": "she will",
+    "we're": "we are",
+    "we'd": "we would",
+    "we'll": "we will",
+    "we've": "we have",
+    "they're": "they are",
+    "they'd": "they would",
+    "they'll": "they will",
+    "they've": "they have",
+
+    "y'all": "you all",    
 
     "can't": "can not",
     "cannot": "can not",
@@ -131,5 +151,6 @@ defaultNormal = {
     "why'll": "why will",
 
     "it's": "it is",
-    
+    "it'd": "it would",
+    "it'll": "it will",
 }    
