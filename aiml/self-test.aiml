@@ -161,11 +161,46 @@ updating the tests in Kernel.py!
 <template>I have already answered this question</template>
 </category>
 
+<!-- thatstar -->
+<category>
+<pattern>TEST THATSTAR</pattern>
+<template>I say beans</template>
+</category>
+<category>
+<pattern>TEST THATSTAR</pattern>
+<that>I SAY *</that>
+<template>I just said "<thatstar/>"</template>
+</category>
+
 <!-- think -->
 <category>
 <pattern>TEST THINK</pattern>
 <template><think>You should not see this response.</think></template>
 </category>
+
+<!-- topic -->
+<category>
+<pattern>TEST TOPIC</pattern>
+<template>What are we talking about?</template>
+</category>
+<topic name="FRUIT">
+<category>
+<pattern>TEST TOPIC</pattern>
+<template>We were discussing apples and oranges</template>
+</category>
+</topic>
+
+<!-- topicstar -->
+<category>
+<pattern>TEST TOPICSTAR</pattern>
+<template>I have no topic</template>
+</category>
+<topic name="SOYLENT *">
+<category>
+<pattern>TEST TOPICSTAR</pattern>
+<template>Solyent <topicstar/> is made of people!</template>
+</category>
+</topic>
 
 <!-- uppercase --><category><pattern>TEST UPPERCASE</pattern><template>The Last Word Should Be <uppercase>Uppercase</uppercase></template></category>
 
