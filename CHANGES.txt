@@ -4,7 +4,8 @@ version 0.8.3:
  - First pass at Unicode-proofing the whole system, so that multi-lingual
    AIML files can be processed.
  - Added support for "index" attribute in "star", "thatstar" and "topicstar"
-   elements (thanks to Robert D. Cotey for the patch!)
+   elements (thanks to Robert D. Cotey for the patch!).  Also added type-check
+   to ensure that the value of the "index" attribute is an integer.
 
 version 0.8.2:
  - Added protection against infinite AIML recursion.
