@@ -1,7 +1,5 @@
 # -*- coding: latin-1 -*-
-"""
-This file contains the public interface to the aiml module.
-"""
+"""This file contains the public interface to the aiml module."""
 import AimlParser
 import DefaultSubs
 import Utils
@@ -89,8 +87,7 @@ class Kernel:
         }
 
     def bootstrap(self, brainFile = None, learnFiles = [], commands = []):
-        """
-        Prepares a Kernel object for use.
+        """Prepare a Kernel object for use.
 
         If a brainFile argument is provided, the Kernel attempts to
         load the brain at the specified filename.
@@ -100,6 +97,7 @@ class Kernel:
 
         Finally, each of the input strings in the commands list is
         passed to respond().
+
         """
         start = time.clock()
         if brainFile:
@@ -124,29 +122,35 @@ class Kernel:
             print "Kernel bootstrap completed in %.2f seconds" % (time.clock() - start)
 
     def verbose(self, isVerbose = True):
-        "Enabled/disables verbose output mode."
+        """Enable/disable verbose output mode."""
         self._verboseMode = isVerbose
 
     def version(self):
-        "Returns the Kernel's version string."
+        """Return the Kernel's version string."""
         return self._version
 
     def numCategories(self):
-        "Returns the number of categories the Kernel has learned."
+        """Return the number of categories the Kernel has learned."""
         # there's a one-to-one mapping between templates and categories
         return self._brain.numTemplates()
 
     def resetBrain(self):
-        "Erases all of the bot's knowledge."
+        """Reset the brain to its initial state.
+
+        This is essentially equivilant to:
+            del(kern)
+            kern = aiml.Kernel()
+
+        """
         del(self._brain)
         self.__init__()
 
     def loadBrain(self, filename):
-        """
-        Attempts to load a previously-saved 'brain' from the
+        """Attempt to load a previously-saved 'brain' from the
         specified filename.
 
         NOTE: the current contents of the 'brain' will be discarded!
+
         """
         if self._verboseMode: print "Loading brain from %s..." % filename,
         start = time.clock()
@@ -156,7 +160,7 @@ class Kernel:
             print "done (%d categories in %.2f seconds)" % (self._brain.numTemplates(), end)
 
     def saveBrain(self, filename):
-        "Dumps the contents of the bot's brain to a file on disk."
+        """Dump the contents of the bot's brain to a file on disk."""
         if self._verboseMode: print "Saving brain to %s..." % filename,
         start = time.clock()
         self._brain.save(filename)
@@ -164,22 +168,43 @@ class Kernel:
             print "done (%.2f seconds)" % (time.clock() - start)
 
     def getPredicate(self, name, sessionID = _globalSessionID):
-        "Retrieves the value of the predicate 'name' from the specified session."
+        """Retrieve the current value of the predicate 'name' from the
+        specified session.
+
+        If name is not a valid predicate in the session, the empty
+        string is returned.
+
+        """
         try: return self._sessions[sessionID][name]
         except KeyError: return ""
 
     def setPredicate(self, name, value, sessionID = _globalSessionID):
-        "Sets the value of the predicate 'name' in the specified session."
+        """Set the value of the predicate 'name' in the specified
+        session.
+
+        If sessionID is not a valid session, it will be created. If
+        name is not a valid predicate in the session, it will be
+        created.
+
+        """
         self._addSession(sessionID) # add the session, if it doesn't already exist.
         self._sessions[sessionID][name] = value
 
     def getBotPredicate(self, name):
-        "Retrieves the value of the specified bot predicate."
+        """Retrieve the value of the specified bot predicate.
+
+        If name is not a valid bot predicate, the empty string is returned.        
+
+        """
         try: return self._botPredicates[name]
         except KeyError: return ""
 
     def setBotPredicate(self, name, value):
-        "Sets the value of the specified bot predicate."
+        """Set the value of the specified bot predicate.
+
+        If name is not a valid bot predicate, it will be created.
+
+        """
         self._botPredicates[name] = value
         # Clumsy hack: if updating the bot name, we must update the
         # name in the brain as well
@@ -187,13 +212,18 @@ class Kernel:
             self._brain.setBotName(self.getBotPredicate("name"))
 
     def setTextEncoding(self, encoding):
-        "Sets the text encoding used when loading AIML files (Latin-1, UTF-8, etc.)"
+        """Set the text encoding used when loading AIML files (Latin-1, UTF-8, etc.)."""
         self._textEncoding = encoding
 
     def loadSubs(self, filename):
-        """Load a substitutions file.  The file must be in the Windows-style INI
-format (see the standard ConfigParser module docs for information on
-this format).  Each section of the file is loaded into its own substituter."""
+        """Load a substitutions file.
+
+        The file must be in the Windows-style INI format (see the
+        standard ConfigParser module docs for information on this
+        format).  Each section of the file is loaded into its own
+        substituter.
+
+        """
         inFile = file(filename)
         parser = ConfigParser()
         parser.readfp(inFile, filename)
@@ -209,7 +239,7 @@ this format).  Each section of the file is loaded into its own substituter."""
                 self._subbers[s][k] = v
 
     def _addSession(self, sessionID):
-        "Creates a new session with the specified ID string."
+        """Create a new session with the specified ID string."""
         if self._sessions.has_key(sessionID):
             return
         # Create the session.
@@ -221,15 +251,18 @@ this format).  Each section of the file is loaded into its own substituter."""
         }
         
     def _deleteSession(self, sessionID):
-        "Deletes the specified session."
+        """Delete the specified session."""
         if self._sessions.has_key(sessionID):
             _sessions.pop(sessionID)
 
     def getSessionData(self, sessionID = None):
-        """Returns a copy of the session data dictionary for the specified session.
+        """Return a copy of the session data dictionary for the
+        specified session.
 
-If no sessionID is specified, return a dictionary containing ALL the individual
-session dictionaries."""
+        If no sessionID is specified, return a dictionary containing
+        *all* of the individual session dictionaries.
+
+        """
         s = None
         if sessionID is not None:
             try: s = self._sessions[sessionID]
@@ -239,7 +272,12 @@ session dictionaries."""
         return copy.deepcopy(s)
 
     def learn(self, filename):
-        "Loads and learns the contents of the specified AIML file (which may include wildcards)"
+        """Load and learn the contents of the specified AIML file.
+
+        If filename includes wildcard characters, all matching files
+        will be loaded and learned.
+
+        """
         for f in glob.glob(filename):
             if self._verboseMode: print "Loading %s..." % f,
             start = time.clock()
@@ -260,7 +298,7 @@ session dictionaries."""
                 print "done (%.2f seconds)" % (time.clock() - start)
 
     def respond(self, input, sessionID = _globalSessionID):
-        "Returns the Kernel's response to the input string."
+        """Return the Kernel's response to the input string."""
         if len(input) == 0:
             return ""
 
@@ -311,7 +349,7 @@ session dictionaries."""
     # to respond() spawned from tags like <srai> should call this function
     # instead of respond().
     def _respond(self, input, sessionID):
-        "Private version of respond(), does the real work."
+        """Private version of respond(), does the real work."""
         if len(input) == 0:
             return ""
 
@@ -363,12 +401,16 @@ session dictionaries."""
         return response
 
     def _processElement(self,elem, sessionID):
-        # The first element of the 'elem' list is a
-        # string describing the type of the element (== the name of
-        # the XML tag).  The second element is a dictionary
-        # containing attributes passed to the XML tag.  Any
-        # remaining elements are element-specific, and should be
-        # treated as additional elements.
+        """Process an AIML element.
+
+        The first item of the elem list is the name of the element's
+        XML tag.  The second item is a dictionary containing any
+        attributes passed to that tag, and their values.  Any further
+        items in the list are the elements enclosed by the current
+        element's begin and end tags; they are handled by each
+        element's handler function.
+
+        """
         try:
             handlerFunc = self._elementProcessors[elem[0]]
         except:
@@ -385,46 +427,66 @@ session dictionaries."""
     ### Individual element-processing functions follow ###
     ######################################################
 
-    # bot
+    # <bot>
     def _processBot(self, elem, sessionID):
-        # Bot elements are used to fetch the value of global,
-        # read-only "bot predicates".  The values of these predicates
-        # cannot be set using AIML; they must be initialized with
-        # Kernel.setBotPredicate().
+        """Process a <bot> AIML element.
+
+        Required element attributes:
+            name: The name of the bot predicate to retrieve.
+
+        <bot> elements are used to fetch the value of global,
+        read-only "bot predicates."  These predicates cannot be set
+        from within AIML; you must use the setBotPredicate() function.
+        
+        """
         attrName = elem[1]['name']
         return self.getBotPredicate(attrName)
         
-    # condition
+    # <condition>
     def _processCondition(self, elem, sessionID):
-        # Condition elements come in three flavors.  Each has different
-        # attributes, and each handles their contents differently.
+        """Process a <condition> AIML element.
+
+        Optional element attributes:
+            name: The name of a predicate to test.
+            value: The value to test the predicate for.
+
+        <condition> elements come in three flavors.  Each has different
+        attributes, and each handles their contents differently.
+
+        The simplest case is when the <condition> tag has both a 'name'
+        and a 'value' attribute.  In this case, if the predicate
+        'name' has the value 'value', then the contents of the element
+        are processed and returned.
+        
+        If the <condition> element has only a 'name' attribute, then
+        its contents are a series of <li> elements, each of which has
+        a 'value' attribute.  The list is scanned from top to bottom
+        until a match is found.  Optionally, the last <li> element can
+        have no 'value' attribute, in which case it is processed and
+        returned if no other match is found.
+
+        If the <condition> element has neither a 'name' nor a 'value'
+        attribute, then it behaves almost exactly like the previous
+        case, except that each <li> subelement (except the optional
+        last entry) must now include both 'name' and 'value'
+        attributes.
+
+        """        
         attr = None
         response = ""
         attr = elem[1]
         
-        # The simplest case is when the condition tag has both a
-        # 'name' and a 'value' attribute.  In this case, if the
-        # predicate 'name' has the value 'value', then the contents of
-        # the element are processed and returned.
+        # Case #1: test the value of a specific predicate for a
+        # specific value.
         if attr.has_key('name') and attr.has_key('value'):
             val = self.getPredicate(attr['name'], sessionID)
             if val == attr['value']:
                 for e in elem[2:]:
                     response += self._processElement(e,sessionID)
                 return response
-        
-        # If the condition element has only a 'name' attribute, then its
-        # contents are a series of <li> elements, each of which has a
-        # 'value' attribute.  The list is scanned from top to bottom
-        # until a match is found.  Optionally, the last <li> element can
-        # have no 'value' attribute, in which case it is processed and
-        # returned if no other match is found.
-        #
-        # If the condition element has neither a 'name' nor a 'value'
-        # attribute, then it behaves almost exactly like the previous
-        # case, except that each <li> subelement (except the optional
-        # last entry) must now include a 'name' attribute.
         else:
+            # Case #2 and #3: Cycle through <li> contents, testing a
+            # name and value pair for each one.
             try:
                 name = None
                 if attr.has_key('name'):
@@ -482,61 +544,96 @@ session dictionaries."""
                 raise
         return response
         
-    # date
+    # <date>
     def _processDate(self, elem, sessionID):
-        # Date elements resolve to the current date and time.  There
-        # doesn't seem to be any dictated format for the response,
-        # so I go with whatever's simplest.
+        """Process a <date> AIML element.
+
+        <date> elements resolve to the current date and time.  The
+        AIML specification doesn't require any particular format for
+        this information, so I go with whatever's simplest.
+
+        """        
         return time.asctime()
 
-    # formal
+    # <formal>
     def _processFormal(self, elem, sessionID):
-        # Formal elements process their contents and then capitalize the
-        # first letter of each word.
+        """Process a <formal> AIML element.
+
+        <formal> elements process their contents recursively, and then
+        capitalize the first letter of each word of the result.
+
+        """                
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
         return string.capwords(response)
 
-    # gender
+    # <gender>
     def _processGender(self,elem, sessionID):
-        # Gender elements process their contents, and then swap the gender
-        # of any third-person singular pronouns in the result.
+        """Process a <gender> AIML element.
+
+        <gender> elements process their contents, and then swap the
+        gender of any third-person singular pronouns in the result.
+        This subsitution is handled by the aiml.WordSub module.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
-        # Run the results through the gender subber.
         return self._subbers['gender'].sub(response)
 
-    # get
+    # <get>
     def _processGet(self, elem, sessionID):
-        # Get elements return the value of a predicate from the specified
-        # session.  The predicate to get is specified by the 'name'
-        # attribute of the element.  Any contents of the element are ignored.
+        """Process a <get> AIML element.
+
+        Required element attributes:
+            name: The name of the predicate whose value should be
+            retrieved from the specified session and returned.  If the
+            predicate doesn't exist, the empty string is returned.
+
+        <get> elements return the value of a predicate from the
+        specified session.
+
+        """
         return self.getPredicate(elem[1]['name'], sessionID)
 
-    # gossip
+    # <gossip>
     def _processGossip(self, elem, sessionID):
-        # Gossip elements are used to capture and store user input in
-        # an implementation-defined manner.  I haven't decided how to
-        # define my implementation, so right now gossip behaves
-        # identically to <think>
+        """Process a <gossip> AIML element.
+
+        <gossip> elements are used to capture and store user input in
+        an implementation-defined manner, theoretically allowing the
+        bot to learn from the people it chats with.  I haven't
+        descided how to define my implementation, so right now
+        <gossip> behaves identically to <think>.
+
+        """        
         return self._processThink(elem, sessionID)
 
-    # id
+    # <id>
     def _processId(self, elem, sessionID):
-        # Id elements are supposed to return some sort of unique "user id".
-        # I choose to return the sessionID, which is the closest thing to
-        # a user id that I've got.
+        """ Process an <id> AIML element.
+
+        <id> elements return a unique "user id" for a specific
+        conversation.  In PyAIML, the user id is the name of the
+        current session.
+
+        """        
         return sessionID
 
-    # input
+    # <input>
     def _processInput(self, elem, sessionID):
-        # Input elements return an entry from the input history for a
-        # given session.  The optional 'index' attribute specifies how
-        # far back to look (1 means the last input, 2 is the one
-        # before that, and so on).  The contents of the element (there
-        # shouldn't be any) are ignored.
+        """Process an <input> AIML element.
+
+        Optional attribute elements:
+            index: The index of the element from the history list to
+            return. 1 means the most recent item, 2 means the one
+            before that, and so on.
+
+        <input> elements return an entry from the input history for
+        the current session.
+
+        """        
         inputHistory = self.getPredicate(self._inputHistory, sessionID)
         try: index = int(elem[1]['index'])
         except: index = 1
@@ -547,93 +644,137 @@ session dictionaries."""
                 sys.stderr.write(err)
             return ""
 
-    # javascript
+    # <javascript>
     def _processJavascript(self, elem, sessionID):
-        # Javascript elements process their contents, and then run the
-        # results through a server-side Javascript interpreter to compute
-        # the final response.  Implementations are not required to provide
-        # an actual Javascript interpreter, and right now PyAIML doesn't;
-        # <javascript> elements behave identically to <think> elements
-        # (their contents are processed, and the empty string is returned).
+        """Process a <javascript> AIML element.
+
+        <javascript> elements process their contents recursively, and
+        then run the results through a server-side Javascript
+        interpreter to compute the final response.  Implementations
+        are not required to provide an actual Javascript interpreter,
+        and right now PyAIML doesn't; <javascript> elements are behave
+        exactly like <think> elements.
+
+        """        
         return self._processThink(elem, sessionID)
     
-    # learn
+    # <learn>
     def _processLearn(self, elem, sessionID):
-        # Learn elements contain one piece of data: an element which
-        # resolves to a filename for the bot to learn.
+        """Process a <learn> AIML element.
+
+        <learn> elements process their contents recursively, and then
+        treat the result as an AIML file to open and learn.
+
+        """
         filename = ""
         for e in elem[2:]:
             filename += self._processElement(e, sessionID)
         self.learn(filename)
         return ""
 
-    # li
+    # <li>
     def _processLi(self,elem, sessionID):
-        # Li (list item) elements are just containers used by <random>
-        # and <condition> tags.  Their contents are processed and
-        # returned.
+        """Process an <li> AIML element.
+
+        Optional attribute elements:
+            name: the name of a predicate to query.
+            value: the value to check that predicate for.
+
+        <li> elements process their contents recursively and return
+        the results. They can only appear inside <condition> and
+        <random> elements.  See _processCondition() and
+        _processRandom() for details of their usage.
+ 
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
         return response
 
-    # lowercase
+    # <lowercase>
     def _processLowercase(self,elem, sessionID):
-        # Lowercase elements process their contents, and return the results
-        # in all lower-case.
+        """Process a <lowercase> AIML element.
+
+        <lowercase> elements process their contents recursively, and
+        then convert the results to all-lowercase.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
         return string.lower(response)
 
-    # person
+    # <person>
     def _processPerson(self,elem, sessionID):
-        # Person elements process their contents, and then convert all
-        # pronouns from 1st person to 2nd person, and vice versa.
+        """Process a <person> AIML element.
+
+        <person> elements process their contents recursively, and then
+        convert all pronouns in the results from 1st person to 2nd
+        person, and vice versa.  This subsitution is handled by the
+        aiml.WordSub module.
+
+        If the <person> tag is used atomically (e.g. <person/>), it is
+        a shortcut for <person><star/></person>.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
-        # An atomic <person/> tag, is a shortcut for <person><star/><person>.
-        if len(elem[2:]) == 0:
+        if len(elem[2:]) == 0:  # atomic <person/> = <person><star/></person>
             response = self._processElement(['star',{}], sessionID)    
-        # run it through the 'person' subber
         return self._subbers['person'].sub(response)
 
-    # person2
+    # <person2>
     def _processPerson2(self,elem, sessionID):
-        # Person2 elements process their contents, and then convert all
-        # pronouns from 1st person to 3nd person, and vice versa.
+        """Process a <person2> AIML element.
+
+        <person2> elements process their contents recursively, and then
+        convert all pronouns in the results from 1st person to 3rd
+        person, and vice versa.  This subsitution is handled by the
+        aiml.WordSub module.
+
+        If the <person2> tag is used atomically (e.g. <person2/>), it is
+        a shortcut for <person2><star/></person2>.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
-        # An atomic <person2/> tag, is a shortcut for <person><star/><person>.
-        if len(elem[2:]) == 0:
+        if len(elem[2:]) == 0:  # atomic <person2/> = <person2><star/></person2>
             response = self._processElement(['star',{}], sessionID)
-        # run it through the 'person2' subber
         return self._subbers['person2'].sub(response)
         
-    # random
+    # <random>
     def _processRandom(self, elem, sessionID):
-        # Random elements contain one or more <li> elements.  The
-        # interpreter chooses one of them randomly, processes it, and
-        # returns the result. Only the selected <li> element is
-        # processed.  Non-<li> subelements are ignored.
+        """Process a <random> AIML element.
+
+        <random> elements contain zero or more <li> elements.  If
+        none, the empty string is returned.  If one or more <li>
+        elements are present, one of them is selected randomly to be
+        processed recursively and have its results returned.  Only the
+        chosen <li> element's contents are processed.  Any non-<li> contents are
+        ignored.
+
+        """
         listitems = []
         for e in elem[2:]:
             if e[0] == 'li':
                 listitems.append(e)
+        if len(listitems) == 0:
+            return ""
                 
         # select and process a random listitem.
         random.shuffle(listitems)
-        try:
-            return self._processElement(listitems[0], sessionID)
-        except IndexError: # listitems is empty
-            return ""
-
-    # sentence
+        return self._processElement(listitems[0], sessionID)
+        
+    # <sentence>
     def _processSentence(self,elem, sessionID):
-        # Sentence elements capitalizes the first letter of the first
-        # word of its contents.
+        """Process a <sentence> AIML element.
+
+        <sentence> elements process their contents recursively, and
+        then capitalize the first letter of the results.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
@@ -646,49 +787,75 @@ session dictionaries."""
         except IndexError: # response was empty
             return ""
 
-    # set
+    # <set>
     def _processSet(self, elem, sessionID):
-        # Set elements processes its contents and assigns the results to
-        # a predicate in the specified session.  The predicate to set
-        # is specified by the required 'name' attribute of the element.
-        # The contents of the element are also returned.
+        """Process a <set> AIML element.
+
+        Required element attributes:
+            name: The name of the predicate to set.
+
+        <set> elements process their contents recursively, and assign the results to a predicate
+        (given by their 'name' attribute) in the current session.  The contents of the element
+        are also returned.
+
+        """
         value = ""
         for e in elem[2:]:
             value += self._processElement(e, sessionID)
         self.setPredicate(elem[1]['name'], value, sessionID)    
         return value
 
-    # size
+    # <size>
     def _processSize(self,elem, sessionID):
-        # Size elements return the number of categories learned.
+        """Process a <size> AIML element.
+
+        <size> elements return the number of AIML categories currently
+        in the bot's brain.
+
+        """        
         return str(self.numCategories())
 
-    # sr
+    # <sr>
     def _processSr(self,elem,sessionID):
-        # <sr/> is a shortcut for <srai><star/></srai>.  So basically, we
-        # compute the <star/> string, and then respond to it.
+        """Process an <sr> AIML element.
+
+        <sr> elements are shortcuts for <srai><star/></srai>.
+
+        """
         star = self._processElement(['star',{}], sessionID)
         response = self._respond(star, sessionID)
         return response
 
-    # srai
+    # <srai>
     def _processSrai(self,elem, sessionID):
-        # Srai elements recursively return the response generated by
-        # their contents, which must resolve to a valid AIML pattern.
+        """Process a <srai> AIML element.
+
+        <srai> elements recursively process their contents, and then
+        pass the results right back into the AIML interpreter as a new
+        piece of input.  The results of this new input string are
+        returned.
+
+        """
         newInput = ""
         for e in elem[2:]:
             newInput += self._processElement(e, sessionID)
         return self._respond(newInput, sessionID)
 
-    # star
+    # <star>
     def _processStar(self, elem, sessionID):
-        # Star elements return the text fragment matched by the "*" character
-        # in the input pattern.  For example, if the input "Hello Tom Smith,
-        # how are you?" matched the pattern "HELLO * HOW ARE YOU", then a
-        # <star/> tag in the template would evaluate to "Tom Smith".
-        # There is an optional "index" attribute, which specifies which
-        # star to expand.  However, since AIML patterns are only allowed
-        # to have one * each, only an index of 1 currently makes sense.
+        """Process a <star> AIML element.
+
+        Optional attribute elements:
+            index: Which "*" character in the current pattern should
+            be matched?
+
+        <star> elements return the text fragment matched by the "*"
+        character in the current input pattern.  For example, if the
+        input "Hello Tom Smith, how are you?" matched the pattern
+        "HELLO * HOW ARE YOU", then a <star> element in the template
+        would evaluate to "Tom Smith".
+
+        """
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         # fetch the user's last input
@@ -702,12 +869,20 @@ session dictionaries."""
         response = self._brain.star("star", input, that, topic, index)
         return response
     
-    # system
+    # <system>
     def _processSystem(self,elem, sessionID):
-        # System elements cause a command to be executed.  The
-        # interpreter blocks until the command is complete, and
-        # returns the command's output.
+        """Process a <system> AIML element.
 
+        <system> elements process their contents recursively, and then
+        attempt to execute the results as a shell command on the
+        server.  The AIML interpreter blocks until the command is
+        complete, and then returns the command's output.
+
+        For cross-platform compatibility, any file paths inside
+        <system> tags should use Unix-style forward slashes ("/") as a
+        directory separator.
+
+        """
         # build up the command string
         command = ""
         for e in elem[2:]:
@@ -736,10 +911,15 @@ session dictionaries."""
         response = string.join(response.splitlines()).strip()
         return response
 
-    # template
+    # <template>
     def _processTemplate(self,elem, sessionID):
-        # Template elements are root nodes.  They process their
-        # contents and return the results.
+        """Process a <template> AIML element.
+
+        <template> elements recursively process their contents, and
+        return the results.  <template> is the root node of any AIML
+        response tree.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
@@ -747,19 +927,32 @@ session dictionaries."""
 
     # text
     def _processText(self,elem, sessionID):
-        # Text elements are simple wrappers around raw text strings. They
-        # have no attributes, and cannot contain other elements in their
-        # contents -- instead, they contain a single text string, which
-        # is returned immediately.
+        """Process a raw text element.
+
+        Raw text elements aren't AIML tags; they have no attributes,
+        and cannot contain any other elements.  Instead, the 3rd item of
+        the 'elem' list is a text string, which is immediately
+        returned.
+
+        """
         try: elem[2] + ""
         except TypeError: raise TypeError, "Text element contents are not text"
         return elem[2]
 
-    # that
+    # <that>
     def _processThat(self,elem, sessionID):
-        # That elements (inside templates) are the output equivilant of
-        # <input> elements; they return one of the Kernel's previous
-        # responses, as specified by the optional 'index' attribute.
+        """Process a <that> AIML element.
+
+        Optional element attributes:
+            index: Specifies which element from the output history to
+            return.  1 is the most recent response, 2 is the next most
+            recent, and so on.
+
+        <that> elements (when they appear inside <template> elements)
+        are the output equivilant of <input> elements; they return one
+        of the Kernel's previous responses.
+
+        """
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
         index = 1
         try:
@@ -777,12 +970,20 @@ session dictionaries."""
                 sys.stderr.write(err)
             return ""
 
-    # thatstar
+    # <thatstar>
     def _processThatstar(self, elem, sessionID):
-        # Thatstar elements are similar to star elements, except that where <star/>
-        # returns the portion of the input pattern that was matched by a *,
-        # <thatstar/> returns the portion of the "that" pattern that was
-        # matched by a *.
+        """Process a <thatstar> AIML element.
+
+        Optional element attributes:
+            index: Specifies which "*" in the <that> pattern to match.
+
+        <thatstar> elements are similar to <star> elements, except
+        that where <star/> returns the portion of the input string
+        matched by a "*" character in the pattern, <thatstar/> returns
+        the portion of the previous input string that was matched by a
+        "*" in the current category's <that> pattern.
+
+        """
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         # fetch the user's last input
@@ -796,22 +997,34 @@ session dictionaries."""
         response = self._brain.star("thatstar", input, that, topic, index)
         return response
 
-    # think
+    # <think>
     def _processThink(self,elem, sessionID):
-        # Think elements process their sub-elements, and then discard the
-        # output. We can't skip the processing, because it could have
-        # side effects (which is the whole point of the <think> tag in
-        # the first place).
+        """Process a <think> AIML element.
+
+        <think> elements process their contents recursively, and then
+        discard the results and return the empty string.  They're
+        useful for setting predicates and learning AIML files without
+        generating any output.
+
+        """
         for e in elem[2:]:
             self._processElement(e, sessionID)
         return ""
 
-    # topicstar
+    # <topicstar>
     def _processTopicstar(self, elem, sessionID):
-        # Topicstar elements are similar to star elements, except that where <star/>
-        # returns the portion of the input pattern that was matched by a *,
-        # <topicstar/> returns the portion of the "topic" pattern that was
-        # matched by a *.
+        """Process a <topicstar> AIML element.
+
+        Optional element attributes:
+            index: Specifies which "*" in the <topic> pattern to match.
+
+        <topicstar> elements are similar to <star> elements, except
+        that where <star/> returns the portion of the input string
+        matched by a "*" character in the pattern, <topicstar/>
+        returns the portion of current topic string that was matched
+        by a "*" in the current category's <topic> pattern.
+
+        """
         try: index = int(elem[1]['index'])
         except KeyError: index = 1
         # fetch the user's last input
@@ -825,19 +1038,28 @@ session dictionaries."""
         response = self._brain.star("topicstar", input, that, topic, index)
         return response
 
-    # uppercase
+    # <uppercase>
     def _processUppercase(self,elem, sessionID):
-        # Uppercase elements process their contents, and return the results
-        # in all caps.
+        """Process an <uppercase> AIML element.
+
+        <uppercase> elements process their contents recursively, and
+        return the results with all lower-case characters converted to
+        upper-case.
+
+        """
         response = ""
         for e in elem[2:]:
             response += self._processElement(e, sessionID)
         return string.upper(response)
 
-    # version
+    # <version>
     def _processVersion(self,elem, sessionID):
-        # Version elements resolve to the current interpreter version.
-        # Any sub-elements are ignored.
+        """Process a <version> AIML element.
+
+        <version> elements return the version number of the AIML
+        interpreter.
+
+        """
         return self.version()
 
 
@@ -845,9 +1067,9 @@ session dictionaries."""
 ### Self-test functions follow                 ###
 ##################################################
 def _testTag(kern, tag, input, outputList):
-    """
-    Tests 'tag' by feeding the Kernel 'input'.  If the result matches any of
-    the strings in 'outputList', the test passes.
+    """Tests 'tag' by feeding the Kernel 'input'.  If the result
+    matches any of the strings in 'outputList', the test passes.
+    
     """
     global _numTests, _numPassed
     _numTests += 1
@@ -907,6 +1129,7 @@ if __name__ == "__main__":
     _testTag(k, 'person2', 'test person2', ['YOU think me know that my actions threaten you and yours.'])
     _testTag(k, 'person2 (no contents)', 'test person2 I Love Lucy', ['YOU Love Lucy'])
     _testTag(k, 'random', 'test random', ["response #1", "response #2", "response #3"])
+    _testTag(k, 'random empty', 'test random empty', ["Nothing here!"])
     _testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])
     _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
     _testTag(k, 'sr', "test sr test srai", ["srai results: srai test passed"])

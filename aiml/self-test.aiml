@@ -110,6 +110,12 @@ updating the tests in Kernel.py!
 </random>
 </template>
 </category>
+<category>
+<pattern>TEST RANDOM EMPTY</pattern>
+<template>
+Nothing <random></random>here!
+</template>
+</category>
 
 <!-- sentence -->
 <category>
