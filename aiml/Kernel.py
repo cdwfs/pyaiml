@@ -25,7 +25,7 @@ class Kernel:
 
     def __init__(self, ):
         self._verboseMode = True
-        self._version = "0.3"
+        self._version = "0.4"
         self._brain = PatternMgr()
 
         # set up the sessions        
