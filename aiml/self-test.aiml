@@ -5,7 +5,7 @@ AIML interpreter kernel.  Do not make any modifications to this file without
 updating the tests in Kernel.py!
 -->
 
-<aiml version="1.0.1">
+<aiml version="1.0.1" xmlns:aiml="http://alicebot.org/2001/AIML-1.0.1">
 <!-- bot -->
 <category>
 <pattern>TEST BOT</pattern>
@@ -142,6 +142,10 @@ updating the tests in Kernel.py!
 </category><category>
 <pattern>TEST SRAI</pattern>
 <template><srai>srai target</srai></template>
+</category>
+<category>
+<pattern>TEST SRAI INFINITE</pattern>
+<template><srai>test srai infinite</srai></template>
 </category>
 
 <!-- star -->
