@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+This file contains some simple AIML categories designed to test the Python
+AIML interpreter kernel.  Do not make any modifications to this file without
+updating the tests in Kernel.py!
+-->
+
+<aiml version="1.0">
+<!-- condition -->
+<category>
+<pattern>TEST CONDITION NAME VALUE</pattern>
+<template>
+<condition name="gender" value="male">You are handsome</condition>
+</template>
+</category>
+<category>
+<pattern>TEST CONDITION NAME</pattern>
+<template>
+    <condition name="gender">
+        <li value="male">You are handsome</li>
+        <li value="female">You are beautiful</li>
+        <li>You are genderless</li>
+    </condition>
+</template>
+</category>
+<category>
+<pattern>TEST CONDITION</pattern>
+<template>
+    <condition>
+        <li name="gender" value="male">You are handsome</li>
+        <li name="gender" value="female">You are beautiful</li>
+        <li>You are genderless</li>
+    </condition>
+</template>
+</category>
+
+<!-- date -->
+<category>
+<pattern>TEST DATE</pattern>
+<template>The date is <date/></template>
+</category>
+<!-- formal --><category><pattern>TEST FORMAL</pattern><template><formal>formal test passed</formal></template></category>
+<!-- gender -->
+<category>
+<pattern>TEST GENDER</pattern>
+<template><gender>She'd told him she heard that his hernia is history</gender></template>
+</category>
+
+<!-- get/set -->
+<category>
+<pattern>TEST GET AND SET</pattern>
+<template>My favorite <set name="food">cheese</set>food is <get name="food"/></template>
+</category>
+
+<!-- lowercase --><category><pattern>TEST LOWERCASE</pattern><template>The Last Word Should Be <lowercase>Lowercase</lowercase></template></category>
+<!-- random -->
+<category>
+<pattern>TEST RANDOM</pattern>
+<template>
+<random>
+	<li>response #1</li>
+	<li>response #2</li>
+	<li>response #3</li>
+</random>
+</template>
+</category>
+
+<!-- sentence -->
+<category>
+<pattern>TEST SENTENCE</pattern>
+<template>
+<sentence>my first letter should be capitalized.</sentence>
+</template>
+</category>
+
+<!-- size -->
+<category>
+<pattern>TEST SIZE</pattern>
+<template>I've learned <size/> categories</template>
+</category>
+
+<!-- srai -->
+<category>
+<pattern>SRAI TARGET</pattern>
+<template>srai test passed</template>
+</category><category>
+<pattern>TEST SRAI</pattern>
+<template><srai>srai target</srai></template>
+</category>
+<!-- system -->
+<category>
+<pattern>TEST SYSTEM</pattern>
+<template>The system says <system mode="sync">echo hello</system>!</template>
+</category>
+<category>
+<pattern>TEST SYSTEM ASYNC</pattern>
+<template>Have a calculator!<system mode="async">C:\windows\system32\calc.exe</system></template>
+</category>
+
+<!-- think -->
+<category>
+<pattern>TEST THINK</pattern>
+<template><think>You should not see this response.</think></template>
+</category>
+
+<!-- uppercase --><category><pattern>TEST UPPERCASE</pattern><template>The Last Word Should Be <uppercase>Uppercase</uppercase></template></category>
+
+<!-- version --><category><pattern>TEST VERSION</pattern><template>PyAIML is version <version/></template></category>
+
+</aiml>

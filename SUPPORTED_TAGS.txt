@@ -1,0 +1,65 @@
+This document describes the current state of PyAIML's compliance
+to the AIML 1.0 standard.  The full AIML reference manual can be
+found online at http://www.alicebot.org/documentation/aiml-reference.html
+
+The following tags are currently supported:
+
+<condition>
+<date>
+<formal>
+<gender>
+<get>
+<learn>
+<li>
+<lowercase>
+<random>
+<sentence>
+<set>
+<size>
+<srai>
+<system> (see notes)
+<think>
+<uppercase>
+<version>
+
+Support for the following tags should be implemented in the next version:
+
+<input>
+<person>
+<person2>
+<star>
+<that>
+
+The following tags are not supported:
+
+<gossip>
+<id>
+<if>/<else>
+<javascript> (see notes)
+<sr>
+<thatstar>
+<topic>
+<topicstar>
+
+------------------------------------------------------------------
+
+NOTES ON SPECIFIC TAGS:
+
+<javascript>
+Support for the JavaScript tag is not anticipated; one of the design
+goals of PyAIML is to remain 100% pure standard Python.  So until
+somebody writes a JavaScript interpreter in Python, PyAIML won't
+support the <javascript> tag.  On the bright side, it is possible
+to simulate the effects of the <javascript> tag (i.e. dynamically-
+generated tag contents) using the <system mode="sync"> tag.  This
+solution has the added advantage of allowing *any* programming
+language to be used, not just JavaScript.
+
+<system>
+PyAIML supports a non-standard "mode" attribute in <system> tags.
+The value of the mode attribute can be either "async" or "sync"
+(the default).  Sync-mode implements the behavior described in
+the AIML Reference Manual.  Async-mode causes the specified
+command to be run in a separate process; the interpreter returns
+immediately, and does not capture the output of the spawned
+sub-process.
