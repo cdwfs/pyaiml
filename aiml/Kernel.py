@@ -23,9 +23,9 @@ class Kernel:
     _inputHistory = 1     # keys to a queue (list) of recent user input
     _outputHistory = 2    # keys to a queue (list) of recent responses.
 
-    def __init__(self, ):
+    def __init__(self):
         self._verboseMode = True
-        self._version = "0.4.1"
+        self._version = "0.5"
         self._botName = "Nameless"
         self._brain = PatternMgr()
 
@@ -452,11 +452,20 @@ this format).  Each section of the file is loaded into its own substituter."""
     # learn
     def _processLearn(self, atom, sessionID):
         # Learn atoms contain one piece of data: an atom which
-        # resolves to a filename for the bot to learn.
+        # resolves to a filename for the bot to learn. I've added a
+        # non-standard 'optional' attribute to the <learn> tag, which
+        # takes the value "yes" or "no" (defaults to no).  If optional
+        # is 'yes', then any errors that occur while loading the file
+        # are ignored.  This basically lets you load AIML files which
+        # may or may not be installed.
+        try: optional = (atom[1]['optional'] in ['yes', 'y', 'true'])
+        except KeyError: optional = False
         filename = ""
         for a in atom[2:]:
             filename += self._processAtom(a, sessionID)
-        self.learn(filename)
+        try: self.learn(filename)
+        except IOError, e:
+            if not optional: raise
         return ""
 
     # li

@@ -1,20 +1,24 @@
+version 0.5
+ - Added support for a non-standard "optional" attribute to "learn" tags,
+   which suppresses error messages when loading a file that doesn't exist.
+
 version 0.4.1
  - Unknown AIML tags are handled in a more forgiving fashion.  If an
    unknown tag is encountered, instead of ignoring its contents entirely,
    the contents are processed and returned unaltered.
- - Added support for <bot name="name"> tags, both in patterns and in
+ - Added support for "bot name='name'" tags, both in patterns and in
    templates.  This also fixes a nasty infinite loop crash when a user
    says Hello to a bot. 
 
 version 0.4
- - Added support for <star> and <sr> tags.
+ - Added support for "star" and "sr" tags.
  - Considered adding support for the <secure> tag, but decided against it.
    see SUPPORTED_TAGS.txt for more information.
 
 version 0.3
  - Cleaned up AIML processing code to remove some unnecessary
    special-cases in the interpretation algorithm.
- - Added support for <input> and <that> tags.
+ - Added support for "input" and "that" tags.
 
 version 0.2
  - 50% speedup in Kernel.loadBrain() and Kernel.saveBrain().
@@ -22,10 +26,10 @@ version 0.2
    Kernel.bootstrap() can now be either strings or lists. This
    allows multiple files/commands to be loaded during
    initialization.
- - Added support for <person> and <person2> tags.
+ - Added support for "person" and "person2" tags.
  - Added general word-substitution functionality.  This opens up
    the potential for localizing PyAIML into non-English languages.
    See DefaultSubs.py for more info.
 
-version 0.1 (released 12/8/2003):
+version 0.1:
  - Initial release.
