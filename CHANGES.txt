@@ -1,4 +1,6 @@
 version 0.6
+ - Completely rewrote the LearnHandler class (which handles all AIML parsing)
+   to be much less forgiving of incorrect AIML.
  - Added support for the empty 'person' tag (it implicitly uses 'star' as
    its input if none is provided).
  - Oops; Kernel.respond() was DEFINITELY not thread-safe.  Now it is, provided
@@ -13,6 +15,7 @@ version 0.6
    Kernel is destroyed, at the expense of a small performance hit (all
    that extra disk I/O).  The semantics of this feature may change in future
    releases!
+ - Added support for the "id" tag (it returns the session ID).
 
 version 0.5
  - The filename inside Learn tags can now contain wildcards.  Besides
