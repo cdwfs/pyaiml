@@ -128,7 +128,8 @@ patterns.  The name must be a single word!"""
 		input = re.sub(self._convertRE, "", input)
 		if that.strip() == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
-		thatInput = thatInput.translate(self._whitespaceTransTable)
+		try: thatInput = thatInput.translate(self._whitespaceTransTable)
+		except TypeError: pass # translate doesn't work on Unicode strings
 		thatInput = re.sub(self._convertRE, "", thatInput)
 		if topic.strip() == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
 		topicInput = string.upper(topic)
@@ -152,6 +153,8 @@ The 'starType' parameter specifies which type of star to find.  Legal values are
 		input = re.sub(self._convertRE, "", input)
 		if that.strip() == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
+		try: thatInput = thatInput.translate(self._whitespaceTransTable)
+		except TypeError: pass # translate doesn't work on Unicode strings
 		thatInput = re.sub(self._convertRE, "", thatInput)
 		if topic.strip() == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
 		topicInput = string.upper(topic)

@@ -1,5 +1,9 @@
  - Added protection against infinite AIML recursion.
  - Removed the deprecated Kernel.getBotName and Kernel.setBotName functions.
+ - Added workaround for Unicode input crash.  Feeding the Kernel Unicode
+   input no longer crashes the interpreter, but some internal input-formatting
+   operations must be skipped, which could cause some nonsensical replies
+   (like you're not already used to nonsensical replies, though...)
 
 version 0.8.1:
  - "system" elements now attempt to intelligently convert between UNIX-style
