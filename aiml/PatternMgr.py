@@ -12,12 +12,15 @@ class PatternMgr:
 	_STAR       = 1
 	_TEMPLATE   = 2
 	_THAT       = 3
-	_BOT_NAME   = 4
+	_TOPIC		= 4
+	_BOT_NAME   = 5
 	
 	def __init__(self):
 		self._root = {}
 		self._templateCount = 0
 		self._botName = "Nameless"
+		self._convertRE = re.compile("[^A-Z0-9_* ]")
+
 
 	def setBotName(self, name):
 		"""Sets the name of the bot, used to match <bot name="name"> tags in
@@ -52,7 +55,7 @@ patterns.  The name must be a single word!"""
 			print "Error restoring PatternMgr from file %s:" % filename
 			raise Exception, e
 
-	def add(self, pattern, that, template):
+	def add(self, (pattern,that,topic), template):
 		"Adds a pattern/that/template tuple to the node tree."
 		# TODO: make sure words contains only legal characters
 		# (alphanumerics,*,_)
@@ -87,53 +90,93 @@ patterns.  The name must be a single word!"""
 					node[key] = {}
 				node = node[key]
 
+		# navigate yet further down, if a non-empty "topic" string was included
+		if len(topic) > 0:
+			if not node.has_key(self._TOPIC):
+				node[self._TOPIC] = {}
+			node = node[self._TOPIC]
+			for word in string.split(topic):
+				key = word
+				if key == "_":
+					key = self._UNDERSCORE
+				elif key == "*":
+					key = self._STAR
+				if not node.has_key(key):
+					node[key] = {}
+				node = node[key]
+
+
 		# add the template.
 		if not node.has_key(self._TEMPLATE):
 			self._templateCount += 1	
 		node[self._TEMPLATE] = template
 
-	def match(self, pattern, that):
+	def match(self, pattern, that, topic):
 		"""
 		Returns the template which is the closest match to pattern.
-		The optional 'that' parameter contain's the bot's previous response.
+		The 'that' parameter contains the bot's previous response.
+		The 'topic' parameter contains the current topic of conversation
 
 		Returns None if no template is found.
 		"""
+		if len(pattern) == 0:
+			return None
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
-		convertRE = re.compile("[^A-Z0-9_* ]")
 		input = string.upper(pattern)
-		input = re.sub(convertRE, "", input)
+		input = re.sub(self._convertRE, "", input)
 		if that == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
-		thatInput = re.sub(convertRE, "", thatInput)
+		thatInput = re.sub(self._convertRE, "", thatInput)
+		if topic == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
+		topicInput = string.upper(topic)
+		topicInput = re.sub(self._convertRE, "", topicInput)
 		
 		# Pass the input off to the recursive call
-		patMatch, template = self._match(input.split(), thatInput.split(), self._root)
+		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)
 		return template
 
-	def star(self, pattern, that):
-		"Returns a string, the portion of pattern that was matched by a *."
+	def star(self, starType, pattern, that, topic):
+		"""Returns a string, the portion of pattern that was matched by a *.
+
+The 'starType' parameter specifies which type of star to find.  Legal values are:
+ - 'star': matches a star in the main pattern.
+ - 'thatstar': matches a star in the that pattern.
+ - 'topicstar': matches a star in the topic pattern.
+"""
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
-		convertRE = re.compile("[^A-Z0-9_* ]")
 		input = string.upper(pattern)
-		input = re.sub(convertRE, "", input)
+		input = re.sub(self._convertRE, "", input)
 		if that == "": that = "ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
-		thatInput = re.sub(convertRE, "", thatInput)
+		thatInput = re.sub(self._convertRE, "", thatInput)
+		if topic == "": topic = "ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
+		topicInput = string.upper(topic)
+		topicInput = re.sub(self._convertRE, "", topicInput)
 
 		# Pass the input off to the recursive pattern-matcher
-		patMatch, template = self._match(input.split(), thatInput.split(), self._root)
+		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)
 		if template == None:
 			return ""
-		# We're interested in the portion of the pattern before the _THAT section
-		try: patMatch = patMatch[:patMatch.index(self._THAT)]
-		except ValueError:
-			pass
 
+		# Extract the appropriate portion of the pattern, based on the
+		# starType argument.
+		words = None
+		if starType == 'star':
+			patMatch = patMatch[:patMatch.index(self._THAT)]
+			words = input.split()
+		elif starType == 'thatstar':
+			patMatch = patMatch[patMatch.index(self._THAT)+1 : patMatch.index(self._TOPIC)]
+			words = thatInput.split()
+		elif starType == 'topicstar':
+			patMatch = patMatch[patMatch.index(self._TOPIC)+1 :]
+			words = topicInput.split()
+		else:
+			# unknown value
+			raise ValueError, "starType must be in ['star', 'thatstar', 'topicstar']"
+		
 		# compare the input string to the matched pattern, word by word.
-		words = input.split()
 		inStar = False
 		start = end = j = 0
 		for i in range(len(words)):
@@ -156,10 +199,13 @@ patterns.  The name must be a single word!"""
 					end = i-1
 					break
 		# extract the star words from the original, unmutilated input.
-		if inStar: return string.join(pattern.split()[start:end+1])
+		if inStar:
+			if starType == 'star': return string.join(pattern.split()[start:end+1])
+			elif starType == 'thatstar': return string.join(that.split()[start:end+1])
+			elif starType == 'topicstar': return string.join(topic.split()[start:end+1])
 		else: return ""
 
-	def _match(self, words, thatWords, root):
+	def _match(self, words, thatWords, topicWords, root):
 		"""Behind-the-scenes recursive pattern-matching function.
 
 Returns a tuple (pat, tem) where pat is a list of nodes, starting at the root
@@ -168,29 +214,36 @@ and leading to the matching pattern, and tem is the matched template.
 		# base-case: if the word list is empty, return the current node's
 		# template.
 		if len(words) == 0:
-			# if thatWords is empty as well, we're done -- return the template
-			# from this node.  Otherwise, recursively pattern-match again using
-			# thatWords as the input pattern and the current node's _THAT child
-			# as the root.
+			# we're out of words.
 			pattern = []
 			template = None
 			if len(thatWords) > 0:
+				# If thatWords isn't empty, recursively
+				# pattern-match on the _THAT node with thatWords as words.
 				try:
-					pattern, template = self._match(thatWords, [], root[self._THAT])
+					pattern, template = self._match(thatWords, [], topicWords, root[self._THAT])
 					if pattern != None:
 						pattern = [self._THAT] + pattern
 				except KeyError:
 					pattern = []
 					template = None
-			# If we still haven't found anything, return the template from the
-			# current node.
+			elif len(topicWords) > 0:
+				# If thatWords is empty and topicWords isn't, recursively pattern
+				# on the _TOPIC node with topicWords as words.
+				try:
+					pattern, template = self._match(topicWords, [], [], root[self._TOPIC])
+					if pattern != None:
+						pattern = [self._TOPIC] + pattern
+				except KeyError:
+					pattern = []
+					template = None
 			if template == None:
+				# we're totally out of input.  Grab the template at this node.
 				pattern = []
 				try: template = root[self._TEMPLATE]
 				except KeyError: template = None
 			return (pattern, template)
-				
-		
+
 		first = words[0]
 		suffix = words[1:]
 		
@@ -202,21 +255,21 @@ and leading to the matching pattern, and tem is the matched template.
 			# where a * or _ is at the end of the pattern.
 			for j in range(len(suffix)+1):
 				suf = suffix[j:]
-				pattern, template = self._match(suf, thatWords, root[self._UNDERSCORE])
+				pattern, template = self._match(suf, thatWords, topicWords, root[self._UNDERSCORE])
 				if template is not None:
 					newPattern = [self._UNDERSCORE] + pattern
 					return (newPattern, template)
 
 		# Check first
 		if root.has_key(first):
-			pattern, template = self._match(suffix, thatWords, root[first])
+			pattern, template = self._match(suffix, thatWords, topicWords, root[first])
 			if template is not None:
 				newPattern = [first] + pattern
 				return (newPattern, template)
 
 		# check bot name
 		if root.has_key(self._BOT_NAME) and first == self._botName:
-			pattern, template = self._match(suffix, thatWords, root[self._BOT_NAME])
+			pattern, template = self._match(suffix, thatWords, topicWords, root[self._BOT_NAME])
 			if template is not None:
 				newPattern = [first] + pattern
 				return (newPattern, template)
@@ -227,7 +280,7 @@ and leading to the matching pattern, and tem is the matched template.
 			# where a * or _ is at the end of the pattern.
 			for j in range(len(suffix)+1):
 				suf = suffix[j:]
-				pattern, template = self._match(suf, thatWords, root[self._STAR])
+				pattern, template = self._match(suf, thatWords, topicWords, root[self._STAR])
 				if template is not None:
 					newPattern = [self._STAR] + pattern
 					return (newPattern, template)
