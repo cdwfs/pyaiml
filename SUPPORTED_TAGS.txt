@@ -1,47 +1,48 @@
 This document describes the current state of PyAIML's compliance
-to the AIML 1.0 standard.  The full AIML reference manual can be
+to the AIML 1.0.1 standard.  The full AIML reference manual can be
 found online at http://www.alicebot.org/documentation/aiml-reference.html
 
 The following tags are currently supported:
 
-<bot name="name"> (see notes)
-<condition>
-<date>
-<formal>
-<gender>
-<get>
-<id>
-<input>
-<learn>
-<li>
-<lowercase>
-<person>
-<person2>
-<random>
-<sentence>
-<set>
-<size>
-<sr>
-<srai>
-<star> (see notes)
-<system> (see notes)
-<that> (both inside patterns and inside categories)
-<think>
-<uppercase>
-<version>
+	<bot name="name"> (see notes)
+	<condition>
+	<date>
+	<formal>
+	<gender>
+	<get>
+	<id>
+	<input>
+	<learn>
+	<li>
+	<lowercase>
+	<person>
+	<person2>
+	<random>
+	<sentence>
+	<set>
+	<size>
+	<sr>
+	<srai>
+	<star> (see notes)
+	<system> (see notes)
+	<that>
+	<thatstar>
+	<think>
+	<topic>
+	<topicstar>
+	<uppercase>
+	<version>
 
 Support for the following tags should be implemented in the next version:
 
-<thatstar>
+	None
 
 The following tags are not supported:
 
-<gossip>
-<if>/<else>
-<javascript> (see notes)
-<secure> (see notes)
-<topic>
-<topicstar>
+	<gossip>
+	<if>/<else>
+	<javascript> (see notes)
+	<secure> (see notes)
 
 ------------------------------------------------------------------
 
@@ -92,4 +93,4 @@ The value of the mode attribute can be either "async" or "sync"
 the AIML Reference Manual.  Async-mode causes the specified
 command to be run in a separate process; the interpreter returns
 immediately, and does not capture the output of the spawned
-sub-process.
+sub-process (instead returning an empty string).
