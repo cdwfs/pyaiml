@@ -1,10 +1,12 @@
 PyAIML -- The Python AIML Interpreter
 author: Cort Stratton (cort@users.sourceforge.net)
 web: http://pyaiml.sourceforge.net/
-version: 0.1 (pre-alpha)
 
 This is currently pre-alpha software.  Use at your
 own risk!
+
+For information on what's new in this version, see the
+CHANGES.txt file.
 
 For information on the state of development, including 
 the current level of AIML 1.0 compliance, see the
