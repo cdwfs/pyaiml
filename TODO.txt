@@ -1,12 +1,8 @@
 Laundry list of future tasks, in no particular order:
 
- - error reporting.  There's too many silent failures, especially in the
-   atom-processing functions.  If anything goes wrong, the code catches the
-   exception and just returns an empty string.  This may be acceptable
-   default behavior, but a descriptive error message should be displayed
-   in verbose mode.  So, the real right way to do this is to build all this error-
-   checking into the LearnHandler class, so that these errors are caught at parse-
-   time.  That'll be a fun job.
+ - AimlParser._validateElemStart() needs to test the well-formedness of
+   attribute values (for example, making sure that the "index" attribute
+   has an integer value, and not a string).
  - Support the Program D startup file syntax, or something similar?  It seems to
    be a good way to initialize bot settings and substitutions.
  - Finalize the persistent session data implementation.  It looks like the
