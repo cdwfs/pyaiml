@@ -8,11 +8,11 @@ from PatternMgr import PatternMgr
 from WordSub import WordSub
 
 from ConfigParser import ConfigParser
+import copy
 import glob
 import os
 import random
 import re
-import shelve
 import string
 import sys
 import time
@@ -37,8 +37,6 @@ class Kernel:
 
         # set up the sessions        
         self._sessions = {}
-        self._sessionsArePersistent = False
-        self._sessionsDir = "sessions"
         self._addSession(self._globalSessionID)
 
         # Set up the bot predicates
@@ -87,12 +85,6 @@ class Kernel:
             "version":      self._processVersion,
         }
 
-    def __del__(self):
-        # close the session files
-        for id in self._sessions.keys():
-            if self._sessionsArePersistent:
-                self._sessions[id].close()
-            self._sessions.pop(id)
     def bootstrap(self, brainFile = None, learnFiles = [], commands = []):
         """
         Prepares a Kernel object for use.
@@ -218,54 +210,35 @@ this format).  Each section of the file is loaded into its own substituter."""
             for k,v in parser.items(s):
                 self._subbers[s][k] = v
 
-    def persistentSessions(self, enable, sessionsDir = None):
-        """Enables/disables persistent sessions.
-
-If disabled, all session data is lost when the Kernel is destroyed.
-The optional sessionsDir argument specifies a directory where persistent
-session data should be stored.  Calling this function erases all existing
-session data in memory, so it should be called shortly after startup."""
-        if enable == self._sessionsArePersistent:
-            return
-        self._sessionsArePersistent = enable
-        if enable:
-            # store the sessions dir
-            if sessionsDir is not None: self._sessionsDir = sessionsDir
-            # delete existing sessions
-            for id in self._sessions.keys():
-                self._sessions.pop(id)
-        else:
-            # close and remove all existing sessions
-            for id in self._sessions.keys():
-                self._sessions[id].close()
-                self._sessions.pop(id)
-        
-
     def _addSession(self, sessionID):
         "Creates a new session with the specified ID string."
         if self._sessions.has_key(sessionID):
             return
-        # Create the session.  Use either a dict or a shelve object,
-        # depending on whether sessions should be persistent.
-        if self._sessionsArePersistent:
-            if not os.path.isdir(self._sessionsDir):
-                os.mkdir(self._sessionsDir)
-            sessionFile = "%s/%s.db" % (self._sessionsDir, sessionID)
-            self._sessions[sessionID] = shelve.open(sessionFile, protocol=-1)
-        else:
-            self._sessions[sessionID] = {}
-        # Initialize the special predicates
-        if not self._sessions[sessionID].has_key(self._inputHistory):
-            self._sessions[sessionID][self._inputHistory] = []
-        if not self._sessions[sessionID].has_key(self._outputHistory):
-            self._sessions[sessionID][self._outputHistory] = []
-        if not self._sessions[sessionID].has_key(self._inputStack):
-            self._sessions[sessionID][self._inputStack] = []
+        # Create the session.
+        self._sessions[sessionID] = {
+            # Initialize the special reserved predicates
+            self._inputHistory: [],
+            self._outputHistory: [],
+            self._inputStack: []
+        }
         
     def _deleteSession(self, sessionID):
         "Deletes the specified session."
         if self._sessions.has_key(sessionID):
             _sessions.pop(sessionID)
+
+    def getSessionData(self, sessionID = None):
+        """Returns a copy of the session data dictionary for the specified session.
+
+If no sessionID is specified, return a dictionary containing ALL the individual
+session dictionaries."""
+        s = None
+        if sessionID is not None:
+            try: s = self._sessions[sessionID]
+            except KeyError: s = {}
+        else:
+            s = self._sessions
+        return copy.deepcopy(s)
 
     def learn(self, filename):
         "Loads and learns the contents of the specified AIML file (which may include wildcards)"
@@ -324,11 +297,6 @@ session data in memory, so it should be called shortly after startup."""
             # append this response to the final response.
             finalResponse += (response + "  ")
         finalResponse = finalResponse.strip()
-
-        # sync the session file
-        try: self._sessions[sessionID].sync()
-        except AttributeError:
-            pass # built-in dicts don't need to be sync'd.
 
         assert(len(self.getPredicate(self._inputStack, sessionID)) == 0)
         
@@ -923,7 +891,7 @@ if __name__ == "__main__":
     _testTag(k, 'star test #1', 'You should test star begin', ['Begin star matched: You should']) 
     _testTag(k, 'star test #2', 'test star creamy goodness middle', ['Middle star matched: creamy goodness'])
     _testTag(k, 'star test #3', 'test star end the credits roll', ['End star matched: the credits roll'])
-    _testTag(k, 'system mode="sync"', "test system", ["The system says hello!"])
+    _testTag(k, 'system', "test system", ["The system says hello!"])
     _testTag(k, 'that test #1', "test that", ["I just said: The system says hello!"])
     _testTag(k, 'that test #2', "test that", ["I have already answered this question"])
     _testTag(k, 'thatstar test #1', "test thatstar", ["I say beans"])
@@ -946,10 +914,3 @@ if __name__ == "__main__":
     # Run an interactive interpreter
     #print "\nEntering interactive mode (ctrl-c to exit)"
     #while True: print k.respond(raw_input("> "))
-
-    k.__del__()
-    try:
-        os.remove("sessions/_global.db")
-        os.rmdir("sessions")
-    except OSError:
-        pass

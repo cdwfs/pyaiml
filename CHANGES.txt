@@ -1,6 +1,11 @@
 version 0.8:
  - Removed support for non-standard "mode" attribute in "system" elements.
    It just wasn't worth breaking the AIML standard for.
+ - Reworked persistent session support (I warned you!).  The old method involving
+   Kernel.persistentSessions() has been removed.  Instead, there is a new
+   Kernel.getSessionData() method which gives the bot author access to the session
+   data.  You can store this data however you wish.  Session data can be restored
+   later by repeated calls to Kernel.setPredicate().
 
 version 0.7:
  - Further improved AIML parsing; missing or invalid XML attributes are now
