@@ -1,6 +1,8 @@
 version 0.5
- - Added support for a non-standard "optional" attribute to "learn" tags,
-   which suppresses error messages when loading a file that doesn't exist.
+ - The filename inside Learn tags can now contain wildcards.  Besides
+   simplifying the loading of multiple files, this allows the possibility
+   of loading AIML files that may not exist without crashing the
+   interpreter.
 
 version 0.4.1
  - Unknown AIML tags are handled in a more forgiving fashion.  If an

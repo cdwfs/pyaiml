@@ -11,7 +11,7 @@ The following tags are currently supported:
 <gender>
 <get>
 <input>
-<learn> (see notes)
+<learn>
 <li>
 <lowercase>
 <person>
@@ -61,13 +61,6 @@ to simulate the effects of the <javascript> tag (i.e. dynamically-
 generated tag contents) using the <system mode="sync"> tag.  This
 solution has the added advantage of allowing *any* programming
 language to be used, not just JavaScript.
-
-<learn>
-PyAIML supports a non-standard 'optional' attribute in <learn> tags. If
-this attribute is present, and has the value 'yes', then any errors that
-occur while learning the specified file are ignored.  This lets you put in
-AIML code to learn files that may or may not be installed, without crashing
-the interpreter.
 
 <secure>
 Some AIML implementations support a non-standard <secure> tag, intended to

@@ -7,6 +7,7 @@ from PatternMgr import PatternMgr
 from WordSub import WordSub
 
 from ConfigParser import RawConfigParser
+import glob
 import os
 import random
 import re
@@ -176,7 +177,7 @@ class Kernel:
         """Load a substitutions file.  The file must be in the Windows-style INI
 format (see the standard ConfigParser module docs for information on
 this format).  Each section of the file is loaded into its own substituter."""
-        inFile = open(filename)
+        inFile = file(filename)
         parser = RawConfigParser()
         parser.readfp(inFile, filename)
         inFile.close()
@@ -205,20 +206,21 @@ this format).  Each section of the file is loaded into its own substituter."""
             _sessions.pop(sessionID)
 
     def learn(self, filename):
-        "Loads and learns the contents of the specified AIML file."
-        if self._verboseMode: print "Loading %s..." % filename,
-        start = time.clock()
-        # Load and parse the AIML file
-        handler = LearnHandler()
-        xml.sax.parse(filename, handler)
-        
-        # store the pattern/template pairs in the PatternMgr.
-        for key,tem in handler.categories.items():
-            pat,that = key
-            self._brain.add(pat, that, tem)
+        "Loads and learns the contents of the specified AIML file (which may include wildcards)"
+        for f in glob.glob(filename):
+            if self._verboseMode: print "Loading %s..." % f,
+            start = time.clock()
+            # Load and parse the AIML file
+            handler = LearnHandler()
+            xml.sax.parse(f, handler)
+            
+            # store the pattern/template pairs in the PatternMgr.
+            for key,tem in handler.categories.items():
+                pat,that = key
+                self._brain.add(pat, that, tem)
 
-        if self._verboseMode:
-            print "done (%.2f seconds)" % (time.clock() - start)
+            if self._verboseMode:
+                print "done (%.2f seconds)" % (time.clock() - start)
 
     def respond(self, input, sessionID = _globalSessionID):
         "Returns the Kernel's response to the input string."
@@ -452,20 +454,11 @@ this format).  Each section of the file is loaded into its own substituter."""
     # learn
     def _processLearn(self, atom, sessionID):
         # Learn atoms contain one piece of data: an atom which
-        # resolves to a filename for the bot to learn. I've added a
-        # non-standard 'optional' attribute to the <learn> tag, which
-        # takes the value "yes" or "no" (defaults to no).  If optional
-        # is 'yes', then any errors that occur while loading the file
-        # are ignored.  This basically lets you load AIML files which
-        # may or may not be installed.
-        try: optional = (atom[1]['optional'] in ['yes', 'y', 'true'])
-        except KeyError: optional = False
+        # resolves to a filename for the bot to learn.
         filename = ""
         for a in atom[2:]:
             filename += self._processAtom(a, sessionID)
-        try: self.learn(filename)
-        except IOError, e:
-            if not optional: raise
+        self.learn(filename)
         return ""
 
     # li
