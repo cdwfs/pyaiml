@@ -120,6 +120,11 @@ updating the tests in Kernel.py!
 <pattern>TEST THAT</pattern>
 <template>I just said: <that index="1,1"/></template>
 </category>
+<category>
+<pattern>TEST THAT</pattern>
+<that>I JUST SAID *</that>
+<template>I have already answered this question</template>
+</category>
 
 <!-- think -->
 <category>

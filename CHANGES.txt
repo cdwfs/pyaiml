@@ -1,6 +1,7 @@
 version 0.3
  - Cleaned up AIML processing code to remove some unnecessary
    special-cases in the interpretation algorithm.
+ - Added support for <input> and <that> tags.
 
 version 0.2
  - 50% speedup in Kernel.loadBrain() and Kernel.saveBrain().

@@ -64,6 +64,7 @@ class PatternMgr:
 		if len(that) > 0:
 			if not node.has_key(self._THAT):
 				node[self._THAT] = {}
+			node = node[self._THAT]
 			for word in string.split(that):
 				key = word
 				if key == "_":
@@ -79,47 +80,63 @@ class PatternMgr:
 			self._templateCount += 1	
 		node[self._TEMPLATE] = template
 
-	def match(self, pattern):
+	def match(self, pattern, that = ""):
 		"""
 		Returns the template which is the closest match to pattern.
+		The optional 'that' parameter contain's the bot's previous response.
 
 		Returns None if no template is found.
 		"""
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
+		convertRE = re.compile("[^A-Z0-9_* ]")
 		input = string.upper(pattern)
-		input = re.sub("[^A-Z0-9_* ]", "", input)
+		input = re.sub(convertRE, "", input)
+		thatInput = string.upper(that)
+		thatInput = re.sub(convertRE, "", thatInput)
 		
 		# Pass the input off to the recursive call
-		return self._match(string.split(input), self._root)
+		return self._match(input.split(), thatInput.split(), self._root)
 
-	def _match(self, words, root):
+	def _match(self, words, thatWords, root):
 		"Behind-the-scenes recursive pattern-matching function."
-
 		# base-case: if the word list is empty, return the current node's
 		# template.
 		if len(words) == 0:
-			try:
-				return root[self._TEMPLATE]
-			except KeyError:
-				return None
+			# if thatWords is empty as well, we're done -- return the template
+			# from this node.  Otherwise, recursively pattern-match again using
+			# thatWords as the input pattern and the current node's _THAT child
+			# as the root.
+			template = None
+			if len(thatWords) > 0:
+				try: template = self._match(thatWords, [], root[self._THAT])
+				except KeyError: template = None
+			# If we still haven't found anything, return the template from the
+			# current node.
+			if template == None:
+				try: template = root[self._TEMPLATE]
+				except KeyError: template = None
+			return template
+				
 		
 		first = words[0]
 		suffix = words[1:]
 		
-		# Check underscore
+		# Check underscore.
+		# Note: this is causing problems in the standard AIML set, and is
+		# currently disabled.
 #		if root.has_key(self._UNDERSCORE):
 #			# Must include the case where suf is [] in order to handle the case
 #			# where a * or _ is at the end of the pattern.
 #			for j in range(len(suffix)+1):
 #				suf = suffix[j:]
-#				template = self._match(suf, root[self._UNDERSCORE])
+#				template = self._match(suf, thatWords, root[self._UNDERSCORE])
 #				if template is not None:
 #					return template
 
 		# Check first
 		if root.has_key(first):
-			template = self._match(suffix, root[first])
+			template = self._match(suffix, thatWords, root[first])
 			if template is not None:
 				return template
 			
@@ -129,7 +146,7 @@ class PatternMgr:
 			# where a * or _ is at the end of the pattern.
 			for j in range(len(suffix)+1):
 				suf = suffix[j:]
-				template = self._match(suf, root[self._STAR])
+				template = self._match(suf, thatWords, root[self._STAR])
 				if template is not None:
 					return template
 

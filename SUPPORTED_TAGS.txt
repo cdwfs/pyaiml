@@ -9,6 +9,7 @@ The following tags are currently supported:
 <formal>
 <gender>
 <get>
+<input>
 <learn>
 <li>
 <lowercase>
@@ -20,15 +21,14 @@ The following tags are currently supported:
 <size>
 <srai>
 <system> (see notes)
+<that> (both inside patterns and inside categories)
 <think>
 <uppercase>
 <version>
 
 Support for the following tags should be implemented in the next version:
 
-<input>
 <star>
-<that>
 
 The following tags are not supported:
 

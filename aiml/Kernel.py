@@ -220,13 +220,20 @@ this format).  Each section of the file is loaded into its own substituter."""
         # Add the input to the history list before fetching the
         # response, so that <input/> tags work properly.
         inputHistory = self.getPredicate(self._inputHistory, sessionID)
-        inputHistory.append(subbedInput)
+        inputHistory.append(input)
         if len(inputHistory) > self._maxHistorySize:
             inputHistory.pop(0)        
+
+        # fetch the bot's previous response, to pass to the match()
+        # function as 'that'.
+        outputHistory = self.getPredicate(self._outputHistory, sessionID)
+        try: that = outputHistory[-1]
+        except IndexError: that = ""
+        subbedThat = self._subbers['normal'].sub(that)
         
         # Fetch the interpretable atom for the user's input
         response = ""
-        atom = self._brain.match(subbedInput)
+        atom = self._brain.match(subbedInput, subbedThat)
         if atom is None:
             if self._verboseMode: print "No match found for input."
         else:
@@ -686,7 +693,8 @@ if __name__ == "__main__":
     _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
     _testTag(k, 'srai', "test srai", ["srai test passed"])
     _testTag(k, 'system mode="sync"', "test system", ["The system says hello!"])
-    _testTag(k, 'that', "test that", ["I just said: The system says hello!"])
+    _testTag(k, 'that test #1', "test that", ["I just said: The system says hello!"])
+    _testTag(k, 'that test #2', "test that", ["I have already answered this question"])
     _testTag(k, 'think', "test think", [""])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
