@@ -415,13 +415,16 @@ class AimlHandler(ContentHandler):
 				raise AimlParserError, ("Unexpected \"%s\" attribute in <%s> element " % (a,name))+self._location()
 
 		# special-case: several tags contain an optional "index" attribute.
-		# This attribute's value must be an integer.
+		# This attribute's value must be a positive integer.
 		if name in ["star", "thatstar", "topicstar"]:
 			for k,v in attr.items():
 				if k == "index":
+					temp = 0
 					try: temp = int(v)
 					except:
 						raise AimlParserError, ("Bad type for \"%s\" attribute (expected integer, found \"%s\") " % (k,v))+self._location()
+					if temp < 1:
+						raise AimlParserError, ("\"%s\" attribute must have non-negative value " % (k))+self._location()
 
 		# See whether the containing element is permitted to contain
 		# subelements. If not, this element is invalid no matter what it is.
