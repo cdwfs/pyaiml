@@ -3,7 +3,6 @@ This file contains the public interface to the aiml module.
 """
 import DefaultSubs
 import Utils
-from AimlParser import AimlParser
 from PatternMgr import PatternMgr
 from WordSub import WordSub
 
@@ -243,8 +242,9 @@ session dictionaries."""
             if self._verboseMode: print "Loading %s..." % f,
             start = time.clock()
             # Load and parse the AIML file.
-            handler = AimlParser(self._textEncoding)
-            try: xml.sax.parse(f, handler)
+            parser = xml.sax.make_parser(["AimlParser", "aiml.AimlParser"])
+            handler = parser.getContentHandler()
+            try: parser.parse(f)
             except xml.sax.SAXParseException, msg:
                 err = "\nFATAL PARSE ERROR in file %s:\n%s\n" % (f,msg)
                 sys.stderr.write(err)

@@ -1,10 +1,12 @@
 from xml.sax.handler import ContentHandler
 from xml.sax.xmlreader import Locator
 import sys
+import xml.sax
+import xml.sax.handler
 
 class AimlParserError(Exception): pass
 
-class AimlParser(ContentHandler):
+class AimlHandler(ContentHandler):
 	# The legal states of the AIML parser
 	_STATE_OutsideAiml    = 0
 	_STATE_InsideAiml     = 1
@@ -61,9 +63,11 @@ class AimlParser(ContentHandler):
 		return "(line %d, column %d)" % (line, column)
 
 	def startElementNS(self, name, qname, attr):
-		#print "NAME:", name
-		#print "QNAME:", qname
-		#print "ATTR:", attr
+		print "QNAME:", qname
+		print "NAME:", name
+		uri,elem = name
+		if (elem == "bot"): print "name:", attr.getValueByQName("name"), "a'ite?"
+		self.startElement(elem, attr)
 		pass
 
 	def startElement(self, name, attr):
@@ -179,6 +183,7 @@ class AimlParser(ContentHandler):
 			# so it can later be marshaled.
 			attrDict = {}
 			for k,v in attr.items():
+				#attrDict[k[1].encode(self._encoding)] = v.encode(self._encoding)
 				attrDict[k.encode(self._encoding)] = v.encode(self._encoding)
 			self._validateElemStart(name, attrDict, self._version)
 			# Push the current element onto the element stack.
@@ -262,6 +267,10 @@ class AimlParser(ContentHandler):
 		else:
 			# all other text is ignored
 			pass
+
+	def endElementNS(self, name, qname):
+		uri, elem = name
+		self.endElement(elem)
 		
 	def endElement(self, name):
 		# Wrapper around _endElement which catches errors in _characters()
@@ -461,3 +470,10 @@ class AimlParser(ContentHandler):
 						raise AimlParserError, "Invalid <li> inside multi-predicate <condition> "+self._location()
 		# All is well!
 		return True
+
+def create_parser():
+	parser = xml.sax.make_parser()
+	handler = AimlHandler("UTF-8")
+	parser.setContentHandler(handler)
+	#parser.setFeature(xml.sax.handler.feature_namespaces, True)
+	return parser

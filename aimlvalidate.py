@@ -1,5 +1,5 @@
 """
-Python AIML Validator, v1.0.1
+Python AIML Validator, v1.1
 Author: Cort Stratton (cort@users.sourceforge.net)
 
 Usage:
@@ -31,13 +31,13 @@ if __name__ == "__main__":
     for arg in sys.argv[1:]:
         # Input files can contain wildcards; iterate over matches
         for f in glob.glob(arg):
-            # Create a new AimlParser for each file.
-            handler = aiml.AimlParser()
+            parser = xml.sax.make_parser(["aiml.AimlParser"])
+            handler = parser.getContentHandler()
             docCount += 1
             print "%s:" % f
             try:
                 # Attempt to parse the file.
-                xml.sax.parse(f, handler)
+                parser.parse(f)
                 # Check the number of parse errors.
                 if handler.getNumErrors() == 0:    
                     validCount += 1

@@ -1,7 +1,6 @@
 version 0.8.3:
- - Added Kernel.setTextEncoding() method.  Call this before loading AIML files to
-   specify which text encoding to use (e.g. Latin-1, UTF-8).  Default encoding
-   is UTF-8.
+ - Reworked the way AimlParser objects are created, to allow support for
+   XML namespaces in a future version.
 
 version 0.8.2:
  - Added protection against infinite AIML recursion.
