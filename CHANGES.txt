@@ -1,3 +1,8 @@
+version 0.8.1:
+ - "system" elements now attempt to intelligently convert between UNIX-style
+   and Windows-style pathnames as appropriate.  For cross-platform compatibility,
+   all AIML files should use UNIX-style paths inside their "system" elements.
+
 version 0.8:
  - Removed support for non-standard "mode" attribute in "system" elements.
    It just wasn't worth breaking the AIML standard for.

@@ -31,7 +31,7 @@ class Kernel:
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.8"
+        self._version = "PyAIML 0.8.1"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
 
@@ -697,6 +697,15 @@ session dictionaries."""
         for e in elem[2:]:
             command += self._processElement(e, sessionID)
 
+        # normalize the path to the command.  Under Windows, this
+        # switches forward-slashes to back-slashes; all system
+        # elements should use unix-style paths for cross-platform
+        # compatibility.
+        #executable,args = command.split(" ", 1)
+        #executable = os.path.normpath(executable)
+        #command = executable + " " + args
+        command = os.path.normpath(command)
+        
         # execute the command.
         response = ""
         out = os.popen(command)
