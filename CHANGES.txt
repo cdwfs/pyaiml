@@ -1,4 +1,6 @@
 version 0.8.5
+ - Fixed a couple lingering Unicode bugs, one of which was breaking things
+   pretty thoroughly under Python 2.2.3.
  - Improved whitespace handling, to the point where it should be compliant
    with the AIML 1.0.1 standard.  Basically, whitespace will be stripped
    down to readable levels, unless the xml:space attribute is used to
