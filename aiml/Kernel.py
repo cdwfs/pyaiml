@@ -1,3 +1,4 @@
+# -*- coding: latin-1 -*-
 """
 This file contains the public interface to the aiml module.
 """
@@ -35,7 +36,7 @@ class Kernel:
         self._version = "PyAIML 0.8.4"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
-        self._textEncoding = "utf_8"
+        self._textEncoding = "utf-8"
 
         # set up the sessions        
         self._sessions = {}
@@ -262,6 +263,10 @@ session dictionaries."""
         "Returns the Kernel's response to the input string."
         if len(input) == 0:
             return ""
+
+        #ensure that input is a unicode string
+        try: input = input.decode('utf-8', 'replace')
+        except UnicodeEncodeError: pass
         
         # prevent other threads from stomping all over us.
         self._respondLock.acquire()
@@ -314,7 +319,7 @@ session dictionaries."""
         inputStack = self.getPredicate(self._inputStack, sessionID)
         if len(inputStack) > self._maxRecursionDepth:
             if self._verboseMode:
-                err = "WARNING: maximum recursion depth exceeded (input='%s')" % input.encode(self._textEncoding)
+                err = "WARNING: maximum recursion depth exceeded (input='%s')" % input.encode(self._textEncoding, 'replace')
                 sys.stderr.write(err)
             return ""
 
@@ -370,7 +375,7 @@ session dictionaries."""
             # Oops -- there's no handler function for this element
             # type!
             if self._verboseMode:
-                err = "WARNING: No handler found for <%s> element\n" % elem[0].encode(self._textEncoding)
+                err = "WARNING: No handler found for <%s> element\n" % elem[0].encode(self._textEncoding, 'replace')
                 sys.stderr.write(err)
             return ""
         return handlerFunc(elem, sessionID)
@@ -723,7 +728,7 @@ session dictionaries."""
             out = os.popen(command)            
         except RuntimeError, msg:
             if self._verboseMode:
-                err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg.encode(self._textEncoding)
+                err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg.encode(self._textEncoding, 'replace')
                 sys.stderr.write(err)
             return "There was an error while computing my response.  Please inform my botmaster."
         for line in out:
@@ -853,7 +858,7 @@ def _testTag(kern, tag, input, outputList):
         _numPassed += 1
         return True
     else:
-        print "FAILED (response: '%s')" % response.encode(kern._textEncoding)
+        print "FAILED (response: '%s')" % response.encode(kern._textEncoding, 'replace')
         return False
 
 if __name__ == "__main__":
