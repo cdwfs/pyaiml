@@ -167,11 +167,8 @@ class Kernel:
 
     def setPredicate(self, name, value, sessionID = _globalSessionID):
         "Sets the value of the predicate 'name' in the specified session."
-        try:
-            self._sessions[sessionID][name] = value
-        except:
-            # silently fail if no such session exists
-            if self._verboseMode: print "WARNING: no such sessionID", sessionID
+        self._addSession(sessionID) # add the session, if it doesn't already exist.
+        self._sessions[sessionID][name] = value
 
     def loadSubs(self, filename):
         """Load a substitutions file.  The file must be in the Windows-style INI
