@@ -303,7 +303,7 @@ class Kernel:
             return ""
 
         #ensure that input is a unicode string
-        try: input = input.decode('utf-8', 'replace')
+        try: input = input.decode(self._textEncoding, 'replace')
         except UnicodeEncodeError: pass
         
         # prevent other threads from stomping all over us.
@@ -342,7 +342,7 @@ class Kernel:
         
         # release the lock and return
         self._respondLock.release()
-        return finalResponse
+        return finalResponse.encode(self._textEncoding)
 
     # This version of _respond() just fetches the response for some input.
     # It does not mess with the input and output histories.  Recursive calls
@@ -1074,7 +1074,7 @@ def _testTag(kern, tag, input, outputList):
     global _numTests, _numPassed
     _numTests += 1
     print "Testing <" + tag + ">:",
-    response = kern.respond(input)
+    response = kern.respond(input).decode(kern._textEncoding)
     if response in outputList:
         print "PASSED"
         _numPassed += 1
