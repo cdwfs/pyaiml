@@ -210,7 +210,7 @@ The 'starType' parameter specifies which type of star to find.  Legal values are
 
 Returns a tuple (pat, tem) where pat is a list of nodes, starting at the root
 and leading to the matching pattern, and tem is the matched template.
-"""
+""" 
 		# base-case: if the word list is empty, return the current node's
 		# template.
 		if len(words) == 0:

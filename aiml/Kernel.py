@@ -25,11 +25,12 @@ class Kernel:
     _maxHistorySize = 10 # maximum length of the _inputs and _responses lists
     # special predicate keys
     _inputHistory = "_inputHistory"     # keys to a queue (list) of recent user input
-    _outputHistory = "_outputHistory"    # keys to a queue (list) of recent responses.
+    _outputHistory = "_outputHistory"   # keys to a queue (list) of recent responses.
+    _inputStack = "_inputStack"         # Should always be empty in between calls to respond()
 
     def __init__(self):
         self._verboseMode = True
-        self._version = "PyAIML 0.6"
+        self._version = "PyAIML 0.6.1"
         self._botName = "Nameless"
         self._brain = PatternMgr()
         self._respondLock = threading.RLock()
@@ -243,6 +244,8 @@ session data in memory, so it should be called shortly after startup."""
             self._sessions[sessionID][self._inputHistory] = []
         if not self._sessions[sessionID].has_key(self._outputHistory):
             self._sessions[sessionID][self._outputHistory] = []
+        if not self._sessions[sessionID].has_key(self._inputStack):
+            self._sessions[sessionID][self._inputStack] = []
         
     def _deleteSession(self, sessionID):
         "Deletes the specified session."
@@ -306,6 +309,8 @@ session data in memory, so it should be called shortly after startup."""
         try: self._sessions[sessionID].sync()
         except AttributeError:
             pass # built-in dicts don't need to be sync'd.
+
+        assert(len(self.getPredicate(self._inputStack, sessionID)) == 0)
         
         # release the lock and return
         self._respondLock.release()
@@ -319,6 +324,11 @@ session data in memory, so it should be called shortly after startup."""
         "Private version of respond(), does the real work."
         if len(input) == 0:
             return ""
+
+        # push the input onto the input stack
+        inputStack = self.getPredicate(self._inputStack, sessionID)
+        inputStack.append(input)
+        self.setPredicate(self._inputStack, inputStack, sessionID)
 
         # run the input through the 'normal' subber
         subbedInput = self._subbers['normal'].sub(input)
@@ -338,12 +348,18 @@ session data in memory, so it should be called shortly after startup."""
         response = ""
         atom = self._brain.match(subbedInput, subbedThat, subbedTopic)
         if atom is None:
-            if self._verboseMode: print "No match found for input:", s
+            if self._verboseMode: print "No match found for input:", input
         else:
             # Process the atom into a response string.
             response += self._processAtom(atom, sessionID).strip()
             response += " "
         response = response.strip()
+
+        # pop the top entry off the input stack.
+        inputStack = self.getPredicate(self._inputStack, sessionID)
+        inputStack.pop()
+        self.setPredicate(self._inputStack, inputStack, sessionID)
+        
         return response
 
     def _processAtom(self,atom, sessionID):
@@ -682,8 +698,8 @@ session data in memory, so it should be called shortly after startup."""
             if self._verboseMode: print "WARNING: index>1 has no meaning in <star> tags"
             return ""
         # fetch the user's last input
-        inputHistory = self.getPredicate(self._inputHistory, sessionID)
-        input = self._subbers['normal'].sub(inputHistory[-1])
+        inputStack = self.getPredicate(self._inputStack, sessionID)
+        input = self._subbers['normal'].sub(inputStack[-1])
         # fetch the Kernel's last response (for 'that' context)
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
         try: that = self._subbers['normal'].sub(outputHistory[-1])
@@ -782,8 +798,8 @@ session data in memory, so it should be called shortly after startup."""
             if self._verboseMode: print "WARNING: index>1 has no meaning in <thatstar> tags"
             return ""
         # fetch the user's last input
-        inputHistory = self.getPredicate(self._inputHistory, sessionID)
-        input = self._subbers['normal'].sub(inputHistory[-1])
+        inputStack = self.getPredicate(self._inputStack, sessionID)
+        input = self._subbers['normal'].sub(inputStack[-1])
         # fetch the Kernel's last response (for 'that' context)
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
         try: that = self._subbers['normal'].sub(outputHistory[-1])
@@ -814,8 +830,8 @@ session data in memory, so it should be called shortly after startup."""
             if self._verboseMode: print "WARNING: index>1 has no meaning in <topicstar> tags"
             return ""
         # fetch the user's last input
-        inputHistory = self.getPredicate(self._inputHistory, sessionID)
-        input = self._subbers['normal'].sub(inputHistory[-1])
+        inputStack = self.getPredicate(self._inputStack, sessionID)
+        input = self._subbers['normal'].sub(inputStack[-1])
         # fetch the Kernel's last response (for 'that' context)
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
         try: that = self._subbers['normal'].sub(outputHistory[-1])
@@ -907,6 +923,7 @@ if __name__ == "__main__":
     _testTag(k, 'sentence', "test sentence", ["My first letter should be capitalized."])
     _testTag(k, 'size', "test size", ["I've learned %d categories" % k.numCategories()])
     _testTag(k, 'sr', "test sr test srai", ["srai results: srai test passed"])
+    _testTag(k, 'sr nested', "test nested sr test srai", ["srai results: srai test passed"])
     _testTag(k, 'srai', "test srai", ["srai test passed"])
     _testTag(k, 'star test #1', 'You should test star begin', ['Begin star matched: You should']) 
     _testTag(k, 'star test #2', 'test star creamy goodness middle', ['Middle star matched: creamy goodness'])
