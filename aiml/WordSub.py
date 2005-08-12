@@ -37,7 +37,10 @@ class WordSub(dict):
 
     def _wordToRegex(self, word):
         """Convert a word to a regex object which matches the word."""
-        return r"\b%s\b" % re.escape(word)
+        if word != "" and word[0].isalpha() and word[-1].isalpha():
+            return "\\b%s\\b" % re.escape(word)
+        else: 
+            return r"\b%s\b" % re.escape(word)
     
     def _update_regex(self):
         """Build re object based on the keys of the current
