@@ -23,7 +23,7 @@ class PatternMgr:
 		self._botName = u"Nameless"
 		punctuation = "\"`~!@#$%^&*()-_=+[{]}\|;:',<.>/?"
 		self._puncStripRE = re.compile("[" + re.escape(punctuation) + "]")
-		self._whitespaceRE = re.compile("\s", re.LOCALE | re.UNICODE)
+		self._whitespaceRE = re.compile("\s+", re.LOCALE | re.UNICODE)
 
 	def numTemplates(self):
 		"""Return the number of templates currently stored."""
@@ -140,14 +140,14 @@ class PatternMgr:
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
 		input = string.upper(pattern)
-		input = re.sub(self._puncStripRE, "", input)
+		input = re.sub(self._puncStripRE, " ", input)
 		if that.strip() == u"": that = u"ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
+		thatInput = re.sub(self._puncStripRE, " ", thatInput)
 		thatInput = re.sub(self._whitespaceRE, " ", thatInput)
-		thatInput = re.sub(self._puncStripRE, "", thatInput)
 		if topic.strip() == u"": topic = u"ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
 		topicInput = string.upper(topic)
-		topicInput = re.sub(self._puncStripRE, "", topicInput)
+		topicInput = re.sub(self._puncStripRE, " ", topicInput)
 		
 		# Pass the input off to the recursive call
 		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)
@@ -166,14 +166,16 @@ class PatternMgr:
 		# Mutilate the input.  Remove all punctuation and convert the
 		# text to all caps.
 		input = string.upper(pattern)
-		input = re.sub(self._puncStripRE, "", input)
+		input = re.sub(self._puncStripRE, " ", input)
+		input = re.sub(self._whitespaceRE, " ", input)
 		if that.strip() == u"": that = u"ULTRABOGUSDUMMYTHAT" # 'that' must never be empty
 		thatInput = string.upper(that)
+		thatInput = re.sub(self._puncStripRE, " ", thatInput)
 		thatInput = re.sub(self._whitespaceRE, " ", thatInput)
-		thatInput = re.sub(self._puncStripRE, "", thatInput)
 		if topic.strip() == u"": topic = u"ULTRABOGUSDUMMYTOPIC" # 'topic' must never be empty
 		topicInput = string.upper(topic)
-		topicInput = re.sub(self._puncStripRE, "", topicInput)
+		topicInput = re.sub(self._puncStripRE, " ", topicInput)
+		topicInput = re.sub(self._whitespaceRE, " ", topicInput)
 
 		# Pass the input off to the recursive pattern-matcher
 		patMatch, template = self._match(input.split(), thatInput.split(), topicInput.split(), self._root)
