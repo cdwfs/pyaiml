@@ -1,3 +1,8 @@
+version 0.8.6
+ - Fixed WorbSub module to work with words that consist entirely of punctuation :-).
+ - Fixed PatternMgr module to replace non-alphanumerics with whitespace instead of simply
+   consuming them (thanks to Hugh Sasse for the patch).
+
 version 0.8.5
  - Fixed a couple lingering Unicode bugs, one of which was breaking things
    pretty thoroughly under Python 2.2.3.
