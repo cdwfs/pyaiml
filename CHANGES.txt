@@ -4,6 +4,7 @@ version 0.8.6
    consuming them (thanks to Hugh Sasse for the patch).
  - Added workaround to avoid a rare IOError exception when processing <system> tags
    (thanks to Duncan Gough for the patch).
+ - PyAIML is now released under the FreeBSD license.
 
 version 0.8.5
  - Fixed a couple lingering Unicode bugs, one of which was breaking things
