@@ -908,6 +908,7 @@ class Kernel:
                 err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg.encode(self._textEncoding, 'replace')
                 sys.stderr.write(err)
             return "There was an error while computing my response.  Please inform my botmaster."
+        time.sleep(0.01) # I'm told this works around a potential IOError exception.
         for line in out:
             response += line + "\n"
         response = string.join(response.splitlines()).strip()
