@@ -1,6 +1,6 @@
 """
 Python AIML Validator, v1.1
-Author: Cort Stratton (cort@users.sourceforge.net)
+Author: Cort Stratton (cort@cortstratton.org)
 
 Usage:
     aimlvalidate.py file1.aiml [file2.aiml ...]

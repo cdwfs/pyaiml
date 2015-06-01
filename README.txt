@@ -1,6 +1,6 @@
 PyAIML -- The Python AIML Interpreter
-author: Cort Stratton (cort@users.sourceforge.net)
-web: http://pyaiml.sourceforge.net/
+author: Cort Stratton
+web: https://github.com/cdwfs/pyaiml
 
 PyAIML is an interpreter for AIML (the Artificial Intelligence Markup
 Language), implemented entirely in standard Python.  It strives for
