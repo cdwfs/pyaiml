@@ -1,0 +1,526 @@
+<HTML>
+  <HEAD>
+    <TITLE>PyAIML (a.k.a. Program Y) - A Python AIML Interpreter</TITLE>
+
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+
+    <META NAME="DESCRIPTION" CONTENT="PyAIML is an interpreter for 
+AIML
+      (Artificial Intelligence Markup Language), implemented in 100%
+      pure standard Python.">
+
+    <META NAME="KEYWORDS" CONTENT="Howie, chatterbot, bot, conversational AI,
+      Python, open source, Alice, AIML, download, homepage, program y">
+  </HEAD>
+  <BODY>
+    <H2 STYLE="text-align:center">PyAIML (a.k.a. Program Y)</H2>
+    <H4 STYLE="text-align:center">A Python AIML Interpreter by Cort Stratton</H4>
+    <H4 STYLE="text-align:center">Another Fine Product from Your Friends At <A HREF="http://www.dangerware.org">Dangerware</A></H4>
+
+    <!-- Latest Version Info -->
+    <P>
+      <I>Latest Stable Version: <B>None</B></I><BR>
+      <I>Latest Unstable Version: <B>0.8.5</B></I><BR>
+      <I><B><A HREF="http://sourceforge.net/projects/pyaiml/files/">Download Now!</A></B></I><BR>
+    </P>
+
+    <!-- Shameless plug -->
+    <P>
+      <a
+      href="http://sourceforge.net/donate/index.php?group_id=96635"><img
+      src="http://images.sourceforge.net/images/project-support.jpg"
+      width="88" height="32" border="0" alt="Support This Project" /></a>
+      Your generous donations are appreciated!
+    </P>
+    
+    <H3>Table of Contents</H3>
+    <UL>
+      <LI><A HREF="#news">Latest News</A></LI>
+      <LI><A HREF="#about">About PyAIML</A></LI>
+      <LI><A HREF="#downloads">Download PyAIML</A></LI>
+      <LI><A HREF="#examples">Examples</A></LI>
+      <LI><A HREF="#clients">Projects Using PyAIML</A></LI>
+      <LI><A HREF="#license">License Information</A></LI>
+      <LI><A HREF="#credits">Credits</A></LI>
+    </UL>
+
+    <HR>
+
+    <!-- Latest News -->
+    <H3><A NAME="news"></A>Latest News</H3>
+   
+    <UL>
+
+      <LI><B>8/13/2010:</B> It's recently been brought to my attention
+      that PyAIML's quote-unquote "licensing terms" (such as they are)
+      may be preventing the code from reaching as wide an audience as
+      possible.  Since the old license was a joke (and not a terribly
+      funny one), I've decided to re-license PyAIML using the <A
+      HREF="http://www.freebsd.org/copyright/freebsd-license.html">FreeBSD
+      license</A>. I'll update the license file included with the
+      software shortly.</LI>
+
+      <LI><B>9/17/2009:</B> A quick, possibly fruitless note: I recently
+   received an inquiry regaring PyAIML from one <B>Ronald S</B>.  Ronald:
+      Unfortunately, your message was accidentally deleted before I could
+   reply, and I do not have your email address on file.  If you read this,
+	please contact me again at your earliest convenience!</LI>
+
+      <LI><B>10/27/2004:</B> Version 0.8.5 is now available.  This
+      release adds standards-compliant whitespace handling, and fixes
+      a handful of bugs (mostly Unicode-related, including a serious
+      bug under Python 2.2.3).</LI>
+
+      <LI><B>10/21/2004:</B> Thanks to Richard Shea for pointing out
+      that the win32 EXE distribution of PyAIML 0.8.4 was missing all
+      the .py files...that would make it a little difficult to use the
+      package, I suspect :).  There's apparently a bug in the Python
+      2.4 distutils package; I've already contacted the author.  In
+      the meantime, I've replaced the faulty installer on Sourceforge
+      with a working one, built with an earlier version of
+      Python.</LI>
+
+      <LI><B>8/14/2004:</B> Version 0.8.4 is available.  This is a
+      bugfix-only release, mainly having to do with Unicode support.
+      PyAIML should be much friendlier in non-ASCII environments; many
+      thanks to Daniel Kottow for teaching me the right way to wrangle
+      Unicode strings!</LI>
+
+      <LI><B>3/26/2004:</B> Version 0.8.3 is available.  This release
+      adds full internal Unicode support, so that
+      special/international/non-ASCII characters in AIML files will
+      finally work as expected.  It also includes support for the
+      "index" attribute in "star", "thatstar" and "topicstar"
+      elements, so you can use multiple * and _ characters in your
+      AIML patterns.  These changes broke the AIML validation script
+      I'd posted earlier, so a new version is now available <A
+      HREF="http://pyaiml.sourceforge.net/aimlvalidate.py">here</A>.</LI>
+
+    </UL>
+
+    <HR>
+
+    <!-- About PyAIML -->
+    <H3><A NAME="about"></A>About PyAIML</H3>
+
+    <P>PyAIML is an interpreter for <A
+    HREF="http://www.pandorabots.com/pandora/pics/wallaceaimltutorial.html">AIML</A>,
+    the Artificial Intelligence Markup Language, implemented as a 100%
+    pure standard <A HREF="http://www.python.org">Python</A> package.
+    It was developed as an extension to <A
+    HREF="http://howie.sourceforge.net">Howie</A>, an AIML chatterbot
+    project I've been working on (<B>shameless plug!</B>).  Howie was
+    originally built on top of <A
+    HREF="http://www.j-alice.org">J-Alice</A>, a C++ AIML interpreter,
+    but when J-Alice became too difficult to compile I decided that it
+    made more sense to switch to a native Python interpreter.  I soon
+    discovered that AIML hadn't been (publicly) ported to Python,
+    and...well, now it has!</P>
+
+    <P>I have three main design goals for this project.  The first is to
+    continue to rely on nothing but standard Python.  Dependence on
+    external libraries is a pain; this is one of the main reasons I
+    switched away from J-Alice.</P>
+
+    <P>The second goal is 100% compliance with the AIML 1.0.1
+    standard: no less, but also no more.  Interpreters that support
+    extra non-standard tags only serve to encourage non-portable AIML.
+    Personally, I believe there are some great non-standard AIML tags
+    in common use (for instance, the &lt;secure&gt; tag is a great
+    shortcut, and I'm quite fond on the optional "mode" attribute in
+    &lt;system&gt; tags).  I'd love to see these features added to the
+    AIML standard.  But until they are, PyAIML won't support them.</P>
+
+    <P>The final goal is to avoid feature creep.  PyAIML's focus is
+    (and will remain) bare-bones AIML interpreting.  That means no
+    support for obscure communication protocols, no advanced
+    non-standard features, and no user interface to speak of.  All of
+    these features are easy enough to implement in Python that I'm
+    willing to leave them as an exercise to the bot developers.</P>
+
+    <P>Actually, that reminds me: it's worth mentioning that <B>PyAIML
+    is intended for use by developers only</B>.  If you're looking to
+    download a fully-functional AIML chatterbot program, PyAIML isn't
+    for you (but may I once again recommend <A
+    HREF="http://howie.sourceforge.net">Howie</A>?).  If you're
+    looking to <I>write</I> a fully-functional AIML chatterbot
+    program, please read on!</P>
+
+    <HR>
+
+    <!-- Download PyAIML -->
+    <H3><A NAME="downloads"></A>Download PyAIML</H3>
+    
+    <P>All downloads can be found at the <A
+    HREF="http://sourceforge.net/projects/pyaiml/files/">SourceForge
+    project page</A>.  In addition to source & binary distributions of
+    the PyAIML package, I've also posted the Standard AIML set, so you
+    can have some working AIML files to play with.</P>
+
+    <P>For those who just can't wait, the absolute latest source code
+    is always available through Git.  I have a strict policy about not
+    checking in (known) buggy or incomplete code, so you can be
+    reasonably sure that what you're getting is pretty stable.  To
+    grab a snapshot of the very latest sources, run the following
+    commands:</P>
+
+    <PRE>
+git clone git://pyaiml.git.sourceforge.net/gitroot/pyaiml/pyaiml
+    </PRE>
+
+    <HR>
+
+    <!-- Examples -->
+    <H3><A NAME="examples"></A>Examples</H3>
+
+    <P>Here's some basic sample code that demonstrates how to use the
+    PyAIML package.</P>
+
+    <H4>Basic Use</H4>
+    
+    <P>First of all, import the package:</P>
+
+    <PRE>
+import aiml
+    </PRE>
+
+    <P>Next, you need to instantiate a Kernel object.  The Kernel is
+    the only class you should ever have to use in your dealings with
+    PyAIML.</P>
+
+    <PRE>
+k = aiml.Kernel()
+    </PRE>
+
+    <P>The Kernel is now ready to respond to user input -- but it
+    doesn't have anything to say.  So, the next step is to load some
+    AIML files.  This is done through the Kernel's learn() method:</P>
+
+    <PRE>
+k.learn("std-startup.xml")
+    </PRE>
+
+    <P>In this example, we've loaded the startup file from the
+    Standard AIML set.  It defines a single AIML pattern, "LOAD AIML
+    B", which in turn causes the rest of the set to load.  To trigger
+    this process, we pass "load aiml b" as input to the Kernel:</P>
+
+    <PRE>
+k.respond("load aiml b")
+    </PRE>
+
+    <P>The respond() method returns a string containing the Kernel's
+    response to the input, but in this case we ignore the response.
+    We're now ready to start responding <I>intelligently</I> to user
+    input.  The following line sets up the input/output loop:</P>
+
+    <PRE>
+while True: print k.respond(raw_input("> "))
+    </PRE>
+
+    <P>That's all you need to know to get started!</P>
+
+    <H4>Loading and Saving Brains</H4>
+
+    <P>If your bot's AIML files aren't changing much, you can
+    significantly reduce the startup time by using the Kernel's
+    loadBrain() and saveBrain() methods.  These functions let you dump
+    the contents of your bot's "brain" to a file on disk.  The next
+    time your bot runs, rather than re-parsing all the AIML files, it
+    can just load its brain from the last session and pick up right
+    where it left off!</P>
+
+    <P>First, you need to create the brain dump.  First, create a
+    Kernel object and load up the standard AIML set.  Remember that
+    just loading "std-startup.xml" isn't enough -- the bulk of the
+    AIML files aren't loaded until you pass "load aiml b" to the
+    Kernel's respond() method!</P>
+
+    <PRE>
+import aiml
+k = aiml.Kernel()
+k.learn("std-startup.xml")
+k.respond("load aiml b")
+    </PRE>
+
+    <P>Now that the brain is populated with knowledge, use the
+    saveBrain() method to dump the brain to disk:</P>
+
+    <PRE>
+k.saveBrain("standard.brn")
+    </PRE>
+
+    <P>To reload the brain, just use the loadBrain() method.  We'll
+    create a new, empty Kernel object so we can be sure we're starting
+    from a clean slate.</P>
+
+    <PRE>
+k2 = aiml.Kernel()
+k2.loadBrain("standard.brn")
+    </PRE>
+
+    <P>That's all there is to it!  You should favoring loading brains
+    vs. loading AIML files whenever possible, since loading a brain is
+    roughly <B>three times as fast</B> as re-parsing the AIML files!</P>
+
+    <P>NOTE: if you load a bot's brain from disk, all the existing
+    contents of the brain will be overwritten!  However, after the
+    brain is loaded, you can continue to learn() new AIML files just
+    as before, and their contents will be added to the brain.</P>
+
+    <H4>Advanced Kernel Initialization using bootstrap()</H4>
+
+    <P>The Kernel provides a bootstrap() method that you can use to
+    simplify your bot's initialization process.  The bootstrap()
+    method takes the following optional arguments: <I>brainFile</I>,
+    <I>learnFiles</I> and <I>commands</I>.  The actual process that
+    bootstrap() uses to initialize the Kernel object is as
+    follows:</P>
+
+    <OL>
+
+      <LI>If the <I>brainFile</I> argument is present, the Kernel
+      loads the specified brain using k.loadBrain(brainFile).</LI>
+
+      <LI>If the <I>learnFiles</I> argument is present, the Kernel
+      loads each of the files specified in the <I>learnFiles</I> list
+      using k.learn(file).</LI>
+
+      <LI>If the <I>commands</I> argument is present, the Kernel
+      passes each of the commands in the <I>commands</I> list into the
+      respond() method, and prints the result.</LI>
+
+    </OL>
+
+    <P>Using the bootstrap() method, the initialization process can be
+    reduced to the following idiom:</P>
+
+    <PRE>
+import aiml
+import os.path
+
+k = aiml.Kernel()
+if os.path.isfile("standard.brn"):
+    k.bootstrap(brainFile = "standard.brn")
+else:
+    k.bootstrap(learnFiles = "std-startup.xml", commands = "load aiml b")
+    k.saveBrain("standard.brn")
+    </PRE>
+
+    <H4>More Initialization Tips</H4>
+
+    <P>There are two more common initialization tasks to take care of:
+    setting the verbosity level, and setting your bot's name.  The
+    verbosity setting determines whether warnings and non-critical
+    error messages are printed to the text console at runtime.  These
+    messages can be useful when tracking down problems, but other
+    times you don't want to deal with them.  To set the verbosity
+    mode, use the Kernel's verbose() method.  Kernel.verbose(True)
+    enables verbose mode, and Kernel.verbose(False) disables it.
+    Verbose mode is enabled by default.</P>
+
+    <P>Your bot has a name associated with it.  To set your bot's
+    name, use the Kernel's setBotPredicate("name","newName") method.
+    The name you provide must be a single word!  The bot's name is
+    "Nameless" by default.  You can query the bot's current name with
+    Kernel.getBotPredicate("name").</P>
+
+    <H4>Session Management</H4>
+
+    <P>Sometimes, you want your bot to carry on multiple conversations
+    at once.  While you could just pass the input of two or more users
+    to Kernel.respond(), your bot (and your users) might get confused
+    as a result.  The bot could call people by the wrong names, refer
+    to earlier conversation topics that never happened, and so on.</P>
+
+    <P>You could solve this problem by creating a separate Kernel
+    object for each conversation, but that results in a lot of wasted
+    memory.  Each individual Kernel would have to load and store the
+    exact same AIML sets, and those things aren't small.</P>
+
+    <P>To prevent these problems, PyAIML supports the concept of
+    multiple <I>sessions</I>.  Each session represents a single
+    conversation with one or more users, and each one is stored
+    independently from all the others (thus avoiding conversational
+    cross-pollination).  And you only need to load the AIML set
+    once!</P>
+
+    <P>To make use of multiple sessions, you use the optional
+    <I>sessionID</I> parameter (supported by the respond(),
+    getPredicate() and setPredicate() Kernel methods).  The session ID
+    can be anything: a string containing the user's name, an IRC
+    channel name, an IP address...so long as it uniquely idenitifies
+    the conversation.  So, if you're having a conversation with two
+    users, Alice and Bob, and you receive some new input from Bob,
+    you'd make the following call:</P>
+
+    <PRE>
+response = Kernel.respond(input, "Bob")
+    </PRE>
+
+    <P>That's it -- PyAIML takes care of the rest.</P>
+
+    <H4>Persistent Sessions</H4>
+
+    <P>As implemented, all session data is cleared whenever a Kernel
+    object is destroyed (such as when your bot exits).  This means
+    that all the data the Kernel has learned about all the people it's
+    talked with is lost for good!  Some people find that prospect
+    rather unappealing, so PyAIML provides some features which make
+    implementing persistent sessions much easier (see below for the
+    rationale for why PyAIML doesn't just implement persistent
+    sessions itself).</P>
+
+    <P>The key function to remember is
+    <TT>Kernel.getSessionData(sessionID)</TT>.  This function takes a
+    session ID as its argument, and returns a dictionary containing
+    all the predicates currently defined in the specified session, as
+    well as their current values.  You can then write the data to disk
+    however you'd like (I recommend the standard <TT>marshal</TT>
+    module, which is faster than <TT>pickle</TT> and <TT>cPickle</TT>
+    and just as easy to use).  The following snippet saves the "Bob"
+    session to the file "Bob.ses" on disk:</P>
+
+    <PRE>
+session = Kernel.getSessionData("Bob")
+sessionFile = file("Bob.ses", "wb")
+marshal.dump(session, sessionFile)
+sessionFile.close()
+    </PRE>
+
+
+    <P>Later, you can restore a session by loading the dictionary from
+    the file on disk, and then repeatedly calling
+    <TT>Kernel.setPredicate()</TT> on each of its key/value pairs.
+    The following code demonstrates how to restore the state of the
+    "Bob" session that was previously saved to disk:</P>
+
+    <PRE>
+sessionFile = file("Bob.ses", "rb")
+session = marshal.load(sessionFile)
+sessionFile.close()
+for pred,value in session.items():
+    Kernel.setPredicate(pred, value, "Bob")
+    </PRE>
+
+    <P>If the <TT>sessionID</TT> parameter to
+    <TT>Kernel.getSessionData(sessionID)</TT> is omitted, the function
+    returns a much larger dictionary containing ALL the session
+    dictionaries for every session currently in existence.  The keys
+    of this large dictionary are the names of the sessions, and the
+    values are the individual session dictionaries themselves.  If you
+    wanted to quickly save all session data, this is a good way to do
+    so.</P>
+
+    <P><I>NOTE: Originally, the module contained fully-implemented
+    support for persistent sessions, which automatically dumped the
+    session data to files on disk after every response.  However, I
+    eventually decided that the there was a design trade-off
+    (decreased performance vs. frequency of session file updates)
+    inherent to the implementation, and it would be impssible to
+    please everyone.  Hence, the current "roll-your-own"
+    implementation philosophy.</I></P>
+
+    <HR>
+
+    <!-- Projects Using PyAIML -->
+    <H3><A NAME="clients"></A>Projects Using PyAIML</H3>
+
+    <P>Here are the ones that I'm aware of...</P>
+
+    <UL>
+
+      <LI><A HREF="http://howie.sourceforge.net">Howie</A> is a Python
+      chatterbot with interfaces to AIM, XML-RPC and the command line.
+      Not only is he built using PyAIML -- he's the whole reason
+      PyAIML exists in the first place!</LI>
+
+      <LI>An <A HREF="aimlvalidate.py">AIML 1.0.1 Validator
+      script</A>, written by yours truly to demonstrate how easy it is
+      to do so using PyAIML.  Use this script to quickly check your
+      AIML files for syntax errors! (<B>UPDATE 3/26/2004:</B> new
+      version posted for use with PyAIML 0.8.3 and later!)</LI>
+
+      <LI><A HREF="http://hoho.com/mike/aiml-aim">aiml-aimbot</A> is a
+      pure Python AIM bot built with PyAIML. (author: Mike
+      Wakerly)</LI>
+
+      <LI><A HREF="http://www.mo-ja.si/robi/robi.swf">Robi The
+      Robot</A> is a slick Flash-based chatterbot which uses PyAIML as
+      its conversational back-end.  The robot (and the rest of the
+      site) are in Slovenian.  (author: Janko)</LI>
+
+      <LI><A
+      HREF="http://www.suttree.com/code/GrokItBot/">GrokItBot</A> is
+      an IM bot that combines PyAIML with a Bayesian learning
+      algorithm to guess what a user meant to say if no pattern
+      matches their input. (author: Duncan Gough)</LI>
+
+    </UL>
+
+    <HR>
+
+    <!-- License Information -->
+    <H3><A NAME="license"></A>License Information</H3>
+
+    <P>PyAIML is provided under the <A
+    HREF="http://www.freebsd.org/copyright/freebsd-license.html">FreeBSD
+    license</A>.
+
+    <PRE>
+Copyright 2003-2010 Cort Stratton. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the
+    distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE FREEBSD PROJECT OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    </PRE>
+
+    <HR>
+    
+    <!-- Credits -->
+    <H3><A NAME="credits"></A>Credits</H3>
+    <P>(c) 2003 <A HREF="http://www.cortstratton.org">Cort Stratton</A>
+      (<A HREF="mailto:cort@users.sourceforge.net">cort@users.sourceforge.net</A>),
+      with the following exceptions:</P>
+
+    <UL>
+
+      <LI>AIML was developed by Dr. Richard S. Wallace and the
+      A.L.I.C.E. Foundation.  For more information on AIML, visit <A
+      HREF="http://www.alicebot.org/">the
+      A.L.I.C.E. homepage</A>.</LI>
+
+      <LI>The following people have generously contributed fixes and
+      improvements to PyAIML: Robert D. Cotey, Daniel Kottow.</LI>
+
+      <LI>Hooray for <A HREF="http://www.python.org">Python</A>!</LI>
+
+    </UL>
+
+    <!-- footer -->
+    <P>
+<a href="http://sourceforge.net/projects/pyaiml"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=96635&amp;type=11" width="120" height="30" alt="Get PyAIML at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+      &nbsp;
+      <A HREF="http://www.python.org"><IMG SRC="PythonPoweredSmall.gif" BORDER="0" ALT="Powered By Python"></A>
+    </P>    
+    
+  </BODY>
+</HTML>
